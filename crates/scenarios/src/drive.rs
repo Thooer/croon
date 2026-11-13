@@ -449,8 +449,8 @@ impl Run {
             .is_some_and(|actual| is_provider(actual))
     }
 
-    /// 真的 Language 从第 `n` 条起的一步：这一次 llm 或 exec 的结果，加上同一本 Journal 里紧接着的、
-    /// 由 Kernel 当场完成的那几条，到下一个取、下一个交给 llm 或 exec 的交出、或别人造成的记录为止。
+    /// 真的 Language 从第 `n` 条起的一步：这一次 engine 或 exec 的结果，加上同一本 Journal 里紧接着的、
+    /// 由 Kernel 当场完成的那几条，到下一个取、下一个交给 engine 或 exec 的交出、或别人造成的记录为止。
     /// 每一条都要能走：它造成的记录正好是别的 Journal 的下一条，再加上 order。
     fn segment_enabled(&self, ph: &str, n: usize) -> bool {
         let exp = &self.scn.journals[ph];
@@ -498,7 +498,7 @@ impl Run {
     }
 
     /// 现在能走的一步。`fake@1` 与 root entry：它是这本 Journal 的下一条，它在别处造成的记录正好是
-    /// 那些 Journal 的下一条，再加上 order。真的 Language：下一条是交给 llm 或 exec 的交出，且整段能走。
+    /// 那些 Journal 的下一条，再加上 order。真的 Language：下一条是交给 engine 或 exec 的交出，且整段能走。
     fn enabled(&self) -> Vec<Step> {
         let mut out = Vec::new();
         for (ph, exp) in &self.scn.journals {

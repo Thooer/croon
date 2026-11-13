@@ -1,6 +1,6 @@
 //! 假的只接在三处：Language 的插口（`fake@1`）、模型的提供者、exec 的容器。
 //! Definition 写着 `fake@1` 的 Instance，Atom 由脚手架按它的 Journal 报出；别的 Language 的 Instance，
-//! Atom 由那种 Language 报出，脚手架只决定假的 llm 与 exec 何时给出结果。
+//! Atom 由那种 Language 报出，脚手架只决定假的 engine 与 exec 何时给出结果。
 //! 参考：docs/Kernel/Scenarios/README.md（脚手架）。
 
 use std::cell::RefCell;
@@ -36,7 +36,7 @@ impl Shared {
         })
     }
 
-    /// 交给 llm 或 exec 的这一次能不能给出结果：`fake@1` 的随时给，它的先后由报出决定；
+    /// 交给 engine 或 exec 的这一次能不能给出结果：`fake@1` 的随时给，它的先后由报出决定；
     /// 真的 Language 的只在这一步被允许时给。
     fn may_answer(&self, ph: &str, n: usize) -> bool {
         !self.real.contains(ph) || self.allowed == Some((ph.to_owned(), n))

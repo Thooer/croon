@@ -105,7 +105,7 @@ fn the_index_is_the_same_in_any_rebuild_order() {
 }
 
 /// 一个 Instance 影响另一个，当且仅当它的某一步在对方的 Journal 里造成了一条记录：
-/// 取、读取、交给 llm 或 exec 都不在别处留下记录。
+/// 取、读取、交给 engine 或 exec 都不在别处留下记录。
 #[test]
 fn only_sends_and_corrections_leave_records_elsewhere() {
     let (scns, setup) = kernel_scenarios();
@@ -160,7 +160,7 @@ fn only_sends_and_corrections_leave_records_elsewhere() {
     }
 }
 
-// ---- 真的 Language：Atom 由它报出，脚手架只决定 llm 与 exec 何时给出结果 ----
+// ---- 真的 Language：Atom 由它报出，脚手架只决定 engine 与 exec 何时给出结果 ----
 
 fn script() -> Vec<Box<dyn Language>> {
     vec![Box::new(script::Script)]
