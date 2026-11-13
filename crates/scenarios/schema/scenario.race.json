@@ -169,7 +169,7 @@
                     "engine": {
                       "host": "fake-engine",
                       "spec": {
-                        "description": "请求一次模型生成；提供者和模型由这份 Reference 决定",
+                        "description": "场景测试用的模型提供者 Port",
                         "in": {
                           "type": "object",
                           "properties": {
@@ -177,39 +177,10 @@
                               "type": "string"
                             },
                             "messages": {
-                              "type": "array",
-                              "items": {
-                                "$ref": "#/$defs/message"
-                              }
+                              "type": "array"
                             },
                             "tools": {
-                              "type": "array",
-                              "items": {
-                                "type": "object",
-                                "properties": {
-                                  "name": {
-                                    "type": "string"
-                                  },
-                                  "description": {
-                                    "type": "string"
-                                  },
-                                  "input": {
-                                    "type": "object"
-                                  }
-                                },
-                                "required": [
-                                  "name",
-                                  "description",
-                                  "input"
-                                ],
-                                "additionalProperties": false
-                              }
-                            },
-                            "max_output_tokens": {
-                              "type": "integer"
-                            },
-                            "timeout": {
-                              "type": "integer"
+                              "type": "array"
                             }
                           },
                           "required": [
@@ -217,125 +188,7 @@
                             "messages",
                             "tools"
                           ],
-                          "additionalProperties": false,
-                          "$defs": {
-                            "call": {
-                              "type": "object",
-                              "properties": {
-                                "id": {
-                                  "type": "string"
-                                },
-                                "name": {
-                                  "type": "string"
-                                },
-                                "input": {}
-                              },
-                              "required": [
-                                "id",
-                                "name",
-                                "input"
-                              ],
-                              "additionalProperties": false
-                            },
-                            "message": {
-                              "anyOf": [
-                                {
-                                  "type": "object",
-                                  "properties": {
-                                    "role": {
-                                      "enum": [
-                                        "user"
-                                      ]
-                                    },
-                                    "text": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "required": [
-                                    "role",
-                                    "text"
-                                  ],
-                                  "additionalProperties": false
-                                },
-                                {
-                                  "type": "object",
-                                  "properties": {
-                                    "role": {
-                                      "enum": [
-                                        "assistant"
-                                      ]
-                                    },
-                                    "text": {
-                                      "type": "string"
-                                    },
-                                    "reasoning": {
-                                      "anyOf": [
-                                        {
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    },
-                                    "calls": {
-                                      "type": "array",
-                                      "items": {
-                                        "$ref": "#/$defs/call"
-                                      }
-                                    }
-                                  },
-                                  "required": [
-                                    "role",
-                                    "text",
-                                    "reasoning",
-                                    "calls"
-                                  ],
-                                  "additionalProperties": false
-                                },
-                                {
-                                  "type": "object",
-                                  "properties": {
-                                    "role": {
-                                      "enum": [
-                                        "tool"
-                                      ]
-                                    },
-                                    "results": {
-                                      "type": "array",
-                                      "items": {
-                                        "type": "object",
-                                        "properties": {
-                                          "id": {
-                                            "type": "string"
-                                          },
-                                          "name": {
-                                            "type": "string"
-                                          },
-                                          "output": {},
-                                          "is_error": {
-                                            "type": "boolean"
-                                          }
-                                        },
-                                        "required": [
-                                          "id",
-                                          "name",
-                                          "output",
-                                          "is_error"
-                                        ],
-                                        "additionalProperties": false
-                                      }
-                                    }
-                                  },
-                                  "required": [
-                                    "role",
-                                    "results"
-                                  ],
-                                  "additionalProperties": false
-                                }
-                              ]
-                            }
-                          }
+                          "additionalProperties": false
                         },
                         "attach": {
                           "additionalProperties": false
@@ -358,64 +211,13 @@
                                 ]
                               },
                               "calls": {
-                                "type": "array",
-                                "items": {
-                                  "type": "object",
-                                  "properties": {
-                                    "id": {
-                                      "type": "string"
-                                    },
-                                    "name": {
-                                      "type": "string"
-                                    },
-                                    "input": {}
-                                  },
-                                  "required": [
-                                    "id",
-                                    "name",
-                                    "input"
-                                  ],
-                                  "additionalProperties": false
-                                }
+                                "type": "array"
                               },
                               "finish": {
-                                "enum": [
-                                  "stop",
-                                  "length",
-                                  "tool_calls",
-                                  "content_filter",
-                                  "other"
-                                ]
+                                "type": "string"
                               },
                               "usage": {
-                                "type": "object",
-                                "properties": {
-                                  "input": {
-                                    "anyOf": [
-                                      {
-                                        "type": "integer"
-                                      },
-                                      {
-                                        "type": "null"
-                                      }
-                                    ]
-                                  },
-                                  "output": {
-                                    "anyOf": [
-                                      {
-                                        "type": "integer"
-                                      },
-                                      {
-                                        "type": "null"
-                                      }
-                                    ]
-                                  }
-                                },
-                                "required": [
-                                  "input",
-                                  "output"
-                                ],
-                                "additionalProperties": false
+                                "type": "object"
                               }
                             },
                             "required": [
@@ -436,7 +238,7 @@
                     "exec": {
                       "host": "fake-exec",
                       "spec": {
-                        "description": "从显式快照建立独立环境，运行命令，交付稳定产物；不自动采用结果",
+                        "description": "场景测试用的文件执行提供者 Port",
                         "in": {
                           "type": "object",
                           "properties": {
@@ -444,23 +246,16 @@
                               "type": "string"
                             },
                             "mounts": {
-                              "type": "object",
-                              "additionalProperties": {
-                                "type": "string"
-                              }
+                              "type": "object"
                             },
                             "argv": {
-                              "type": "array",
-                              "items": {
-                                "type": "string"
-                              }
+                              "type": "array"
                             },
                             "stdin": {
                               "type": "string"
                             },
                             "timeout": {
-                              "type": "integer",
-                              "description": "秒，正数，至多 600"
+                              "type": "integer"
                             }
                           },
                           "required": [

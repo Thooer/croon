@@ -7,11 +7,11 @@ use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet};
 use std::rc::Rc;
 
+use croon_port::store::Content;
 use kernel::host::{
     Call, Channel, CheckError, Execution, HostDone, HostError, Language, Port, Read, Session,
 };
 use kernel::index::what;
-use kernel::store::Content;
 use serde_json::{Value as Json, json};
 
 use crate::bind::Bind;

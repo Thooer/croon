@@ -21,6 +21,9 @@ pub struct Scn {
 
 /// 是不是一个场景的 block：Kernel 的写 `scenario.名字`，Language 的写 `语言.scenario.名字`。
 pub fn is_scenario(name: &str) -> bool {
+    if matches!(name, "scenario.engine" | "scenario.exec") {
+        return false;
+    }
     name.starts_with("scenario.")
         || name
             .split_once('.')

@@ -1,9 +1,9 @@
 //! 场景源码与目录的导入；只建立内容，不授予 Instance 资格。
 //! 参考：docs/Kernel/Scenarios/README.md（格式）。
 
+use croon_eval::value::ValueId;
+use croon_port::store::{Bundle, ContentStore};
 use kernel::host::{HostError, Read};
-use kernel::store::{Bundle, ContentStore};
-use kernel::value::ValueId;
 use serde_json::{Value as Json, json};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -41,7 +41,7 @@ impl Made {
         self.bytes.get(id).cloned().or_else(|| {
             self.json
                 .get(id)
-                .map(|v| kernel::value::canonical(v).unwrap().into_bytes())
+                .map(|v| croon_eval::value::canonical(v).unwrap().into_bytes())
         })
     }
     fn get_bundle(&self, id: &str) -> Option<Bundle> {
@@ -77,29 +77,17 @@ impl Read for Made {
     }
 }
 
-pub fn root() -> PathBuf {
-    let mut current = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .canonicalize()
-        .expect("CARGO_MANIFEST_DIR 必须存在");
-    loop {
-        let manifest = current.join("Cargo.toml");
-        if std::fs::read_to_string(&manifest)
-            .ok()
-            .is_some_and(|text| text.contains("[workspace]"))
-        {
-            return current;
-        }
-        assert!(current.pop(), "仓库根要存在 workspace Cargo.toml");
-    }
+pub fn root(root: &Path) -> PathBuf {
+    root.canonicalize().expect("场景根目录必须存在")
 }
 
-pub fn expand(value: &Json, made: &mut Made) -> Json {
+pub fn expand(value: &Json, made: &mut Made, root: &Path) -> Json {
     match value {
         Json::Object(m) if m.len() == 1 && m.contains_key("$file") => {
-            json!(std::fs::read_to_string(root().join(m["$file"].as_str().unwrap())).unwrap())
+            json!(std::fs::read_to_string(root.join(m["$file"].as_str().unwrap())).unwrap())
         }
         Json::Object(m) if m.len() == 1 && m.contains_key("$tree") => {
-            json!(tree(&root().join(m["$tree"].as_str().unwrap()), made))
+            json!(tree(&root.join(m["$tree"].as_str().unwrap()), made))
         }
         Json::Object(m) if m.len() == 1 && m.contains_key("$bytes") => {
             let content = made.put_bytes(m["$bytes"].as_str().unwrap().as_bytes().to_vec());
@@ -107,10 +95,10 @@ pub fn expand(value: &Json, made: &mut Made) -> Json {
         }
         Json::Object(m) => Json::Object(
             m.iter()
-                .map(|(k, v)| (k.clone(), expand(v, made)))
+                .map(|(k, v)| (k.clone(), expand(v, made, root)))
                 .collect(),
         ),
-        Json::Array(a) => Json::Array(a.iter().map(|v| expand(v, made)).collect()),
+        Json::Array(a) => Json::Array(a.iter().map(|v| expand(v, made, root)).collect()),
         other => other.clone(),
     }
 }
@@ -152,15 +140,16 @@ fn executable(_: &Path) -> bool {
     false
 }
 
-pub fn values(raw: &BTreeMap<String, Json>) -> (BTreeMap<String, Json>, Made) {
+pub fn values(raw: &BTreeMap<String, Json>, root: &Path) -> (BTreeMap<String, Json>, Made) {
     let mut made = Made::default();
     let values = raw
         .iter()
         .map(|(k, v)| {
-            let expanded = expand(v, &mut made);
-            let value = if v.as_object().is_some_and(|m| {
-                m.contains_key("$bytes") || m.contains_key("$tree")
-            }) {
+            let expanded = expand(v, &mut made, root);
+            let value = if v
+                .as_object()
+                .is_some_and(|m| m.contains_key("$bytes") || m.contains_key("$tree"))
+            {
                 json!({"$alias":expanded})
             } else {
                 expanded
@@ -170,4 +159,3 @@ pub fn values(raw: &BTreeMap<String, Json>) -> (BTreeMap<String, Json>, Made) {
         .collect();
     (values, made)
 }
-

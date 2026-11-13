@@ -1,0 +1,6 @@
+{
+  "description":"场景测试用的模型提供者 Port",
+  "in":{"type":"object","properties":{"system":{"type":"string"},"messages":{"type":"array"},"tools":{"type":"array"}},"required":["system","messages","tools"],"additionalProperties":false},
+  "attach":{"additionalProperties":false},
+  "out":{"value":{"type":"object","properties":{"text":{"type":"string"},"reasoning":{"anyOf":[{"type":"string"},{"type":"null"}]},"calls":{"type":"array"},"finish":{"type":"string"},"usage":{"type":"object"}},"required":["text","reasoning","calls","finish","usage"],"additionalProperties":false},"attach":{"additionalProperties":false}}
+}

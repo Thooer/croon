@@ -3,9 +3,9 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
+use croon_eval::schema::json_eq;
+use croon_eval::value::ValueId;
 use kernel::ids::kind_of;
-use kernel::schema::json_eq;
-use kernel::value::ValueId;
 use serde_json::{Value as Json, json};
 
 pub fn is_value_ph(s: &str) -> bool {

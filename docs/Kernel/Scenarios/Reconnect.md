@@ -17,8 +17,8 @@
           "requires": {
             "construct": {"$block": "reference.kernel#/construct"},
             "instantiate": {"$block": "reference.kernel#/instantiate"},
-            "engine": {"$block": "model.generate"},
-            "exec": {"$block": "directory.exec"},
+            "engine": {"$block": "scenario.engine"},
+            "exec": {"$block": "scenario.exec"},
             "back": {"$block": "scenario.reconnect#/values/sha256:psdone"},
             "asks": {"$block": "scenario.reconnect#/values/sha256:psask"}
           }
@@ -33,7 +33,7 @@
           "description": "W0：改代码，或交办给 worker",
           "signature": {"in": {},"out": {}},
           "provides": {"done": {"$block": "scenario.reconnect#/values/sha256:psdone"}},
-          "requires": {"engine": {"$block": "model.generate"},"exec": {"$block": "directory.exec"},"instantiate": {"$block": "reference.kernel#/instantiate"},"back": {"$block": "scenario.reconnect#/values/sha256:psdone"}}
+          "requires": {"engine": {"$block": "scenario.engine"},"exec": {"$block": "scenario.exec"},"instantiate": {"$block": "reference.kernel#/instantiate"},"back": {"$block": "scenario.reconnect#/values/sha256:psdone"}}
         },
         "body": "W0"
       },
@@ -42,7 +42,7 @@
     "sha256:ds": {
       "$bundle": {
         "language": "fake@1",
-        "interface": {"description": "S：改一处代码","signature": {"in": {},"out": {}},"provides": {},"requires": {"engine": {"$block": "model.generate"},"exec": {"$block": "directory.exec"}}},
+        "interface": {"description": "S：改一处代码","signature": {"in": {},"out": {}},"provides": {},"requires": {"engine": {"$block": "scenario.engine"},"exec": {"$block": "scenario.exec"}}},
         "body": "S"
       },
       "dependencies": []
@@ -90,8 +90,8 @@
               "sources": {
                 "construct": {"kernel": "construct","spec": {"$block": "reference.kernel#/construct"}},
                 "instantiate": {"kernel": "instantiate","spec": {"$block": "reference.kernel#/instantiate"}},
-                "engine": {"host": "fake-engine","spec": {"$block": "model.generate"}},
-                "exec": {"host": "fake-exec","spec": {"$block": "directory.exec"}}
+                "engine": {"host": "fake-engine","spec": {"$block": "scenario.engine"}},
+                "exec": {"host": "fake-exec","spec": {"$block": "scenario.exec"}}
               }
             }
           }

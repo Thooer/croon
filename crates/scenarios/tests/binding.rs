@@ -109,7 +109,11 @@ fn fixture() -> (Rc<Scn>, Setup) {
         .into_iter()
         .find(|s| s.name == "scenario.binding")
         .unwrap();
-    let mut setup = Setup::new(&values, || vec![Box::new(Binding)]);
+    let mut setup = Setup::new(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../.."),
+        &values,
+        || vec![Box::new(Binding)],
+    );
     setup.preload = vec!["sha256:bindinga".into(), "sha256:bindingb".into()];
     (Rc::new(scene), setup)
 }

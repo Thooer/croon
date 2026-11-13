@@ -73,7 +73,11 @@ fn fixture() -> (Rc<Scn>, Setup) {
         .expect("审批场景存在");
     let definition = values.get_mut("sha256:approval").unwrap();
     definition["$bundle"]["language"] = json!("approval@1");
-    let setup = Setup::new(&values, || vec![Box::new(Approval)]);
+    let setup = Setup::new(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../.."),
+        &values,
+        || vec![Box::new(Approval)],
+    );
     (Rc::new(scenario), setup)
 }
 

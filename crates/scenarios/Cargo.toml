@@ -8,5 +8,6 @@ publish.workspace = true
 
 [dependencies]
 croon-eval = { path = "../eval" }
+croon-port = { path = "../port" }
 kernel = { path = "../kernel" }
 serde_json = { workspace = true }

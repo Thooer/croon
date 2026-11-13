@@ -3,15 +3,13 @@
 
 use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
-use crate::blocks;
+use croon_port::store::Budgets;
 use kernel::host::{Channel, Config, Fault, Language};
 use kernel::index::{Index, what};
 use kernel::kernel::{Conn, Kernel, KernelError};
-use kernel::schema::json_eq;
-use kernel::store::Budgets;
 use serde_json::{Value as Json, json};
 
 use crate::bind::Bind;
@@ -20,7 +18,14 @@ use crate::fake::{FakeLang, FakePort, Shared, atom_of};
 use crate::scenario::{Scn, Step};
 
 /// 一组场景共用的东西：展开过的 Value、展开时造出的内容，以及 `fake@1` 之外要装的 Language。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ProviderRole {
+    Provider,
+    Other,
+}
+
 pub struct Setup {
+    pub root: PathBuf,
     /// 测试系统的密钥：固定同次取得的 Handle 的排序；None 让 Kernel 正常生成。
     pub system_key: Option<Vec<u8>>,
     pub values: BTreeMap<String, Json>,
@@ -28,27 +33,42 @@ pub struct Setup {
     /// 可在任何授权发生前预存的 Value；预存不授予能读的资格。
     pub preload: Vec<String>,
     pub languages: fn() -> Vec<Box<dyn Language>>,
+    pub channels: BTreeMap<String, Channel>,
+    pub provider_roles: BTreeMap<String, ProviderRole>,
 }
 
 impl Setup {
     /// `values` 是还没展开的共用名字空间。
     pub fn new(
+        root: impl AsRef<Path>,
         values: &BTreeMap<String, Json>,
         languages: fn() -> Vec<Box<dyn Language>>,
     ) -> Setup {
-        let (values, made) = expand::values(values);
+        let root = expand::root(root.as_ref());
+        let (values, made) = expand::values(values, &root);
         Setup {
+            root,
             values,
             made,
             preload: Vec::new(),
             languages,
+            channels: BTreeMap::from([
+                ("fake-engine".into(), Channel::Discardable),
+                ("fake-exec".into(), Channel::Isolated),
+                ("fake-check".into(), Channel::Discardable),
+            ]),
+            provider_roles: BTreeMap::from([
+                ("fake-engine".into(), ProviderRole::Provider),
+                ("fake-exec".into(), ProviderRole::Provider),
+                ("fake-check".into(), ProviderRole::Provider),
+            ]),
             system_key: Some(vec![7; 32]),
         }
     }
 
     /// 只装 `fake@1`。
-    pub fn fake(values: &BTreeMap<String, Json>) -> Setup {
-        Setup::new(values, Vec::new)
+    pub fn fake(root: impl AsRef<Path>, values: &BTreeMap<String, Json>) -> Setup {
+        Setup::new(root, values, Vec::new)
     }
 
     /// 驱动一次：`seed` 选全序，`at` 是在第几个事务处退出、是否在提交之后。
@@ -133,6 +153,8 @@ pub struct Run {
     made: Made,
     preload: Vec<String>,
     languages: fn() -> Vec<Box<dyn Language>>,
+    channels: BTreeMap<String, Channel>,
+    provider_roles: BTreeMap<String, ProviderRole>,
 }
 
 fn config(
@@ -156,14 +178,6 @@ fn config(
             f.borrow_mut().hit(point, &s.borrow().bind)
         })),
     }
-}
-
-/// 交给 llm 或 exec 的 Port spec。
-fn provider_specs() -> [Json; 2] {
-    [
-        blocks::json("model.generate"),
-        blocks::json("directory.exec"),
-    ]
 }
 
 impl Run {
@@ -234,6 +248,8 @@ impl Run {
             made: setup.made.clone(),
             preload: setup.preload.clone(),
             languages: setup.languages,
+            channels: setup.channels.clone(),
+            provider_roles: setup.provider_roles.clone(),
         }
     }
 
@@ -257,14 +273,9 @@ impl Run {
                 }
                 let (_, port) = kernel.index().birth_wire.get(h)?;
                 let binding = &kernel.index().journals[root].birth()["binding"]["sources"][port];
-                let spec = &binding["spec"];
-                let channel =
-                    if kernel::index::same_spec(spec, "", &blocks::json("directory.exec"), "") {
-                        Channel::Isolated
-                    } else {
-                        Channel::Discardable
-                    };
-                Some((h.to_owned(), channel, binding["host"].as_str()?.to_owned()))
+                let identity = binding["host"].as_str()?.to_owned();
+                let channel = self.channels.get(&identity).copied()?;
+                Some((h.to_owned(), channel, identity))
             })
             .collect();
         for (source, channel, identity) in bindings {
@@ -397,47 +408,45 @@ impl Run {
         self.shared.borrow().real.contains(ph)
     }
 
-    /// 真的 Language 的这条交出交给 llm 或 exec：按它所经的 Port spec 判。目标是 Required port 的，
-    /// 取诞生里的 Definition 写的；是 Handle 的，取它进来的那一处带着的 Port spec。
+    /// 真的 Language 的这条交出是否交给显式登记的测试提供者。
     pub fn to_provider(&self, ph: &str, send: &Json) -> bool {
         let s = self.shared.borrow();
-        if let Some(actual) = send["ref"].as_str().and_then(|h| s.bind.fwd.get(h)) {
-            let kernel = self.kernel.as_ref().unwrap();
-            let view = kernel::index::View {
-                ix: kernel.index(),
-                store: kernel.store(),
-            };
-            return matches!(
-                view.provider(actual),
-                Some(kernel::index::Provider::Host(_))
-            );
-        }
-        let exp = &self.scn.journals[ph];
-        let spec = if let Some(port) = send["to"]["port"].as_str() {
-            let d = what(&exp[0]).1["definition"].as_str().unwrap();
-            s.bind.values[d]["$bundle"]["interface"]["requires"][port].clone()
-        } else {
-            let h = &send["to"]["handle"];
-            let incoming = exp.iter().find_map(|r| {
-                let (kind, body) = what(r);
-                let attach = match kind {
-                    "send" => body["result"]["attach"].as_object(),
-                    "arrival" => body["attach"].as_object(),
-                    _ => None,
-                };
-                attach
+        let kernel = self.kernel.as_ref().unwrap();
+        let view = kernel::index::View {
+            ix: kernel.index(),
+            store: kernel.store(),
+        };
+        let root = kernel.index().root().unwrap();
+        let is_provider = |actual: &str| match view.provider(actual) {
+            Some(kernel::index::Provider::Host(source)) => {
+                kernel.index().journals[root].birth()["wire"]
+                    .as_object()
                     .into_iter()
                     .flatten()
-                    .map(|(_, i)| i)
-                    .find(|i| i["handle"] == *h)
-                    .cloned()
-            });
-            match incoming.map(|i| i["spec"].clone()) {
-                Some(spec) => spec,
-                None => return false,
+                    .find(|(_, handle)| handle.as_str() == Some(source.as_str()))
+                    .and_then(|(port, _)| {
+                        kernel.index().journals[root].birth()["binding"]["sources"][port]["host"]
+                            .as_str()
+                    })
+                    .and_then(|identity| self.provider_roles.get(identity))
+                    .is_some_and(|role| *role == ProviderRole::Provider)
             }
+            _ => false,
         };
-        provider_specs().iter().any(|p| json_eq(p, &spec))
+        if let Some(actual) = send["ref"].as_str().and_then(|h| s.bind.fwd.get(h)) {
+            return is_provider(actual);
+        }
+        let exp = &self.scn.journals[ph];
+        if let Some(port) = send["to"]["port"].as_str() {
+            let handle = exp[0]["what"]["birth"]["wire"][port].as_str();
+            return handle
+                .and_then(|h| s.bind.fwd.get(h))
+                .is_some_and(|actual| is_provider(actual));
+        }
+        send["to"]["handle"]
+            .as_str()
+            .and_then(|h| s.bind.fwd.get(h))
+            .is_some_and(|actual| is_provider(actual))
     }
 
     /// 真的 Language 从第 `n` 条起的一步：这一次 llm 或 exec 的结果，加上同一本 Journal 里紧接着的、

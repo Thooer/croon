@@ -18,7 +18,7 @@
 只写推不出的：
 
 - Bundle、交付依赖与产物都写在 `values` 里；ID 由规范内容算出，依赖数组排序且无重复。普通内容里的 ID 不自动成为依赖，脚手架不为缺失内容造占位对象。
-- Port spec 与形状用 `$block` 引用 reference.kernel、model.generate、directory.exec 等已有 block，不抄。
+- Port spec 与形状用 `$block` 引用 reference.kernel、scenario.engine、scenario.exec 等已有 block，不抄。
 - 源码与目录不抄进 JSON：Value 的内容里出现的 `{"$file": 路径}`、`{"$bytes": 文本}` 和 `{"$tree": 路径}` 由脚手架展开为内容与 Bundle；路径相对仓库根。
 - Definition 的 language 是 `fake@1`：只供脚手架登记的假 Language，body 是一个说明用的字符串，不求值。
 - 失败的 message 与 data 还没有规定，写 `""` 与 `null`，只比 kind。
@@ -29,11 +29,29 @@
 
 - **root entry**：脚手架是它的客户端。按它的诞生创建它：完整 Definition Bundle、输入交付和 binding 取自 `values`；self 里的 Required port 接到自己。之后按它的 Journal 报出 Atom。
 - **假的 Language**：一个 Instance 诞生时，按造成它诞生的事件找到它在 `journals` 里的那本，依次报出其中自己的步：交出给出 key、to、delivery 与附带的目标，取给出 key 与 filter；步走完，报出 `pending`，没有 pending 就以 end 记录里的结果报 done。
-- **真的 Language**：Definition 的 language 不是 fake@1 的、求值器在宿主的 Instance。Atom 由它报出，脚手架管不着；先后改由假的 llm 与 exec 何时给出结果来定。交给宿主源的按绑定目标识别；旧场景的模型与 exec 仍由第一版来源解释。一次结果只在它的记录能走、并且同一本 Journal 里紧接着的、由 Kernel 当场完成的那几条（交给 Kernel 自己执行的 Port 或 Instance 的交出、结束）也都能走时才给出，到下一个取、下一个交给 llm、exec 的交出或别人造成的记录为止；能不能走按下面的「先后」判。当场完成的那几条，先后由 Language 定，脚手架控制不了：只靠控制报出才得到的先后，如 Quick 里子 Agent 先结束，用真的 Language 复现不出。[test:croon/crates/scenarios/tests/scaffold.rs:a_real_language_reports_its_own_atoms_in_any_compatible_order]
+- **真的 Language**：Definition 的 language 不是 fake@1 的、求值器在宿主的 Instance。Atom 由它报出，脚手架管不着；先后改由假的 llm 与 exec 何时给出结果来定。交给宿主源的按绑定目标识别；场景中的模型与 exec 由上述测试 provider spec 解释。一次结果只在它的记录能走、并且同一本 Journal 里紧接着的、由 Kernel 当场完成的那几条（交给 Kernel 自己执行的 Port 或 Instance 的交出、结束）也都能走时才给出，到下一个取、下一个交给 llm、exec 的交出或别人造成的记录为止；能不能走按下面的「先后」判。当场完成的那几条，先后由 Language 定，脚手架控制不了：只靠控制报出才得到的先后，如 Quick 里子 Agent 先结束，用真的 Language 复现不出。[test:croon/crates/scenarios/tests/scaffold.rs:a_real_language_reports_its_own_atoms_in_any_compatible_order]
 - **假的只接在三处**：Language 的插口，fake@1 经 definition.eval 往来；模型的提供者；exec 的容器。其余都是真的 Kernel：内容库、记录库、索引、决定与提交，见 ../Journal.md 的「实现」。root entry 的客户端在进程内直接调 Kernel，不经 socket。
 - **假的宿主 Port**：按来源 Handle 装配，接受一次给一个独立执行对象，按交出记录里的 result 收取；隔离执行的结果显式交付产物 Bundle。pending 里的 Atom 不回。
 - **先后**：一本 Journal 里按序号；跨 Journal 的，事件造成的记录排在造成它的那一步之后，再加上 `order`。脚手架按任何一个与这个偏序相容的全序推进，得到的 Journal 都应当相同。[test:croon/crates/scenarios/tests/scaffold.rs:any_compatible_order_gives_the_same_journals]
 - **预存**：需要排除「ID 不存在」干扰时，Setup.preload 在 root entry 创建前导入指定内容与 Bundle，只存内容，不授予 Instance 取得资格。
+
+```json scenario.engine
+{
+  "description":"场景测试用的模型提供者 Port",
+  "in":{"type":"object","properties":{"system":{"type":"string"},"messages":{"type":"array"},"tools":{"type":"array"}},"required":["system","messages","tools"],"additionalProperties":false},
+  "attach":{"additionalProperties":false},
+  "out":{"value":{"type":"object","properties":{"text":{"type":"string"},"reasoning":{"anyOf":[{"type":"string"},{"type":"null"}]},"calls":{"type":"array"},"finish":{"type":"string"},"usage":{"type":"object"}},"required":["text","reasoning","calls","finish","usage"],"additionalProperties":false},"attach":{"additionalProperties":false}}
+}
+```
+
+```json scenario.exec
+{
+  "description":"场景测试用的文件执行提供者 Port",
+  "in":{"type":"object","properties":{"snapshot":{"type":"string"},"mounts":{"type":"object"},"argv":{"type":"array"},"stdin":{"type":"string"},"timeout":{"type":"integer"}},"required":["snapshot","mounts","argv","stdin","timeout"],"additionalProperties":false},
+  "attach":{"additionalProperties":false},
+  "out":{"value":{"type":"object","properties":{"exit":{"type":"integer"},"stdout":{"type":"string"},"stderr":{"type":"string"},"timed_out":{"type":"boolean"},"truncated":{"type":"boolean"},"snapshot":{"type":"string"}},"required":["exit","stdout","stderr","timed_out","truncated","snapshot"],"additionalProperties":false},"attach":{"additionalProperties":false}}
+}
+```
 - **比对**：每本 Journal 在占位名的绑定下与预期逐字段相等。
 
 脚手架之前，crates/scenarios/tests/expected.rs 先查预期本身合不合文档里的规则：记录、Definition、四条不变量、取与到达的对应，以及交出的值与结果合所经的 Port spec；用真的 Language 写的 Definition，展开之后还要过它的构造检查。

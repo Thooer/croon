@@ -4,7 +4,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use kernel::schema::{json_eq, validate};
+use croon_eval::schema::{json_eq, validate};
 use scenarios::blocks;
 use scenarios::scenario::{self, values};
 use serde_json::{Value as Json, json};
@@ -42,7 +42,7 @@ fn body(record: &Json) -> &Json {
     &record["what"][kind(record)]
 }
 
-fn must(report: kernel::schema::Report, at: &str) {
+fn must(report: croon_eval::schema::Report, at: &str) {
     if let Err(v) = report {
         panic!("{at}：{v:?}");
     }
@@ -410,4 +410,3 @@ fn pending_atoms_fit_definition_eval() {
         }
     }
 }
-
