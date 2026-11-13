@@ -56,6 +56,11 @@
 
 脚手架之前，crates/scenarios/tests/expected.rs 先查预期本身合不合文档里的规则：记录、Definition、四条不变量、取与到达的对应，以及交出的值与结果合所经的 Port spec；用真的 Language 写的 Definition，展开之后还要过它的构造检查。
 
+两条容易漏的装配：
+
+- **通道**：假宿主 Port 的通道由 Setup.channels 按 host 名给出，不从 Port spec 推。spec 相同而通道不同的两个 provider 得各写一行；名字不在表里的 host 不会被绑定，也不报错，新增一个 host 就要同时登记它的通道。
+- **provider role**：真的 Language 的一次交出算不算交给提供者，由 Setup.provider_roles 按 host 名给出，默认不是。据它挑在途崩溃点的测试要先把负责该 Port 的 host 登记成 Provider，否则这次交出不被计入，崩溃点少测一处而测试仍然通过。
+
 核心场景可独立运行：`cargo test --offline -p scenarios`，不依赖 Lang0、Library 或 App。各场景自己的 schema 由 scenarios 直接编译取用，Kernel 构建不嵌入场景。Lang0 和 App 的集成场景由对应仓库负责。
 
 ## 扰动

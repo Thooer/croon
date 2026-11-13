@@ -13,7 +13,9 @@
 //!   结果键；知道 ID 不授予资格。
 //! - [`host::HostError`] 是宿主故障，不是 body 失败。它停下会话，不能由 body 接住。
 //!
-//! 求值契约的规则见 `docs/Kernel/Definition/Cognition.md`，插口见 `docs/Kernel/Language.md`。
+//! 义务以上面几条为准，docs 不复述。理由：构造与检查分层见 `docs/Kernel/Language.md`；
+//! 业务读取为什么按已消费的结果键推进，见 `docs/Kernel/Reference.md`「求值中的读取位置」，
+//! 以及 `docs/Kernel/Definition/Cognition.md` 的「求值契约」。
 
 pub mod blocks;
 pub mod definition;

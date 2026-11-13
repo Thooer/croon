@@ -11,7 +11,8 @@
 //! - 返回 [`HostError`] 是宿主故障，不是 body 失败：Kernel 停下这次执行，Journal 不写业务结果。
 //! - 不带超时的请求合法；Kernel 不为长请求设统一上限。
 //!
-//! 理由、场景与 Kernel 侧的收尾规则见 `docs/Kernel/Reference.md`「通道」与 `docs/Kernel/Port.md`。
+//! 义务以上面这几条为准，docs 不复述。理由：通道与收尾见 `docs/Kernel/Reference.md`「通道」；
+//! attempt 的接受、回收与重做见 `docs/Kernel/Instance.md`「执行」；端口表本身见 `docs/Kernel/Port.md`。
 
 pub mod blocks;
 pub mod host;
