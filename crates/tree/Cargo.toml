@@ -1,0 +1,11 @@
+[package]
+name = "croon-tree"
+description = "Croon 提供者共用的 Tree 内容格式校验。"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+croon-eval = { path = "../eval" }
+serde_json = { workspace = true }
