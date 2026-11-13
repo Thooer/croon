@@ -1,4 +1,8 @@
 //! Croon 的 Kernel。形状以文档为权威，代码只在这里做文档承诺的事。
+//! 参考：docs/README.md（骨架）。
+//!
+//! 本仓库对外的公开面是 `croon-eval`、`croon-port` 与 `croon-tree` 三个 crate；
+//! 提供者按那三个取用，不经由这里重导出，形状与契约只有一个出处。
 
 pub mod blocks;
 pub mod definition;
@@ -8,8 +12,6 @@ pub mod index;
 pub mod journal;
 pub mod kernel;
 pub mod schema;
-/// 内容存储的形状与实现住 `croon-port`；这里重导出，便于在 Kernel 之上写装的代码仍按 `kernel::store` 取用。
-pub use croon_port::store;
 
 #[cfg(test)]
 pub(crate) mod testutil {
