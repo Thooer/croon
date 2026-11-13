@@ -16,7 +16,10 @@ fn kernel_scenarios() -> (Vec<Rc<Scn>>, Setup) {
     let (scns, values) = scenario::kernel();
     (
         scns.into_iter().map(Rc::new).collect(),
-        Setup::fake(&values),
+        Setup::fake(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../.."),
+            &values,
+        ),
     )
 }
 
@@ -40,20 +43,32 @@ fn any_compatible_order_gives_the_same_journals() {
     }
 }
 
-#[test]
-fn a_crash_at_any_commit_recovers_to_the_same_journals() {
-    let (scns, setup) = kernel_scenarios();
-    for scn in &scns {
-        let commits = setup.run(scn, 0, None).faults.borrow().commits;
-        assert!(commits > 3, "{}：只数到 {commits} 个事务", scn.name);
-        for n in 1..=commits {
-            for after in [false, true] {
-                let r = setup.run(scn, n as u64, Some((n, after)));
-                assert!(r.crashes >= 1, "{}：第 {n} 个事务处应当退出过", scn.name);
+macro_rules! commit_crash_test {
+    ($name:ident, $scenario:literal) => {
+        #[test]
+        fn $name() {
+            let (scns, setup) = kernel_scenarios();
+            let scn = scns.iter().find(|s| s.name == $scenario).unwrap();
+            let commits = setup.run(scn, 0, None).faults.borrow().commits;
+            assert!(commits > 3, "{}：只数到 {commits} 个事务", scn.name);
+            for n in 1..=commits {
+                for after in [false, true] {
+                    let r = setup.run(scn, n as u64, Some((n, after)));
+                    assert!(r.crashes >= 1, "{}：第 {n} 个事务处应当退出过", scn.name);
+                }
             }
         }
-    }
+    };
 }
+
+commit_crash_test!(crash_quick_at_any_commit, "scenario.quick");
+commit_crash_test!(crash_delegate_at_any_commit, "scenario.delegate");
+commit_crash_test!(crash_forge_at_any_commit, "scenario.forge");
+commit_crash_test!(crash_race_at_any_commit, "scenario.race");
+commit_crash_test!(crash_pauseonly_at_any_commit, "scenario.pauseonly");
+commit_crash_test!(crash_reconnect_at_any_commit, "scenario.reconnect");
+commit_crash_test!(crash_approval_at_any_commit, "scenario.approval");
+commit_crash_test!(crash_binding_at_any_commit, "scenario.binding");
 
 #[test]
 fn the_index_is_the_same_in_any_rebuild_order() {
@@ -159,7 +174,14 @@ fn scripted_scenarios() -> Vec<(Rc<Scn>, Setup)> {
         .filter(|s| !matches!(s.name.as_str(), "scenario.quick" | "scenario.binding"))
         .map(|s| {
             let values = script::scripted(&s, &values);
-            (Rc::new(s), Setup::new(&values, script))
+            (
+                Rc::new(s),
+                Setup::new(
+                    std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../.."),
+                    &values,
+                    script,
+                ),
+            )
         })
         .collect()
 }
