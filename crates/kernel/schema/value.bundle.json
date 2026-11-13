@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "properties": {
+    "content": {
+      "type": "string",
+      "description": "JSON 或字节 Value 的 ID"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "Bundle ID"
+      },
+      "description": "显式依赖根的集合；ID 排序、无重复"
+    }
+  },
+  "required": [
+    "content",
+    "dependencies"
+  ],
+  "additionalProperties": false
+}

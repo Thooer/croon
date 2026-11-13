@@ -1,0 +1,424 @@
+{
+  "description": "一份 Definition：Cognition、Charter，或求值器在系统外的 Definition",
+  "anyOf": [
+    {
+      "$ref": "#/$defs/cognition"
+    },
+    {
+      "$ref": "#/$defs/charter"
+    },
+    {
+      "$ref": "#/$defs/external"
+    }
+  ],
+  "$defs": {
+    "external": {
+      "type": "object",
+      "properties": {
+        "evaluator": {
+          "enum": [
+            "external"
+          ],
+          "description": "求值器在系统外：没有 Implementation，行为不由 Definition 钉住，规则见 Cognition.md 的「求值器在系统外」"
+        },
+        "interface": {
+          "$ref": "#/$defs/interface"
+        }
+      },
+      "required": [
+        "evaluator",
+        "interface"
+      ],
+      "additionalProperties": false
+    },
+    "cognition": {
+      "type": "object",
+      "properties": {
+        "language": {
+          "type": "string",
+          "description": "Language 的 ID"
+        },
+        "interface": {
+          "$ref": "#/$defs/interface"
+        },
+        "body": {
+          "description": "形状由 Language 定义；所需代码 Bundle 是完整 Definition 的显式依赖"
+        }
+      },
+      "required": [
+        "language",
+        "interface",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "charter": {
+      "type": "object",
+      "properties": {
+        "interface": {
+          "$ref": "#/$defs/interface",
+          "description": "Collective 的 Interface"
+        },
+        "seats": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/seat"
+          },
+          "description": "Seat 的名字 → Seat。名字非空，不含 /"
+        },
+        "wire": {
+          "type": "object",
+          "description": "Seat 的名字 → 它的 Required port → 来源",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/source"
+            }
+          }
+        },
+        "export": {
+          "type": "object",
+          "properties": {
+            "signature": {
+              "type": "string",
+              "description": "Collective 的 Signature 接给的 Seat"
+            },
+            "provides": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/seatport"
+              },
+              "description": "Collective 的 Provided port → 某个 Seat 的 Provided port"
+            }
+          },
+          "required": [
+            "signature",
+            "provides"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "interface",
+        "seats",
+        "wire",
+        "export"
+      ],
+      "additionalProperties": false
+    },
+    "seat": {
+      "type": "object",
+      "properties": {
+        "interface": {
+          "$ref": "#/$defs/interface",
+          "description": "对成员的要求；描述就是这个 Seat 的职责"
+        },
+        "pin": {
+          "type": "object",
+          "description": "写死：只能由这一份 Definition 来占",
+          "properties": {
+            "definition": {
+              "type": "string",
+              "description": "完整 Definition Bundle ID"
+            },
+            "input": {
+              "type": "object",
+              "properties": {
+                "value": {},
+                "dependencies": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "Bundle ID"
+                  },
+                  "description": "显式依赖根的集合；ID 排序、无重复"
+                }
+              },
+              "required": [
+                "value",
+                "dependencies"
+              ],
+              "additionalProperties": false,
+              "description": "固定的 Signature 输入与依赖；Signature 所在的 Seat 不写"
+            }
+          },
+          "required": [
+            "definition"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "interface"
+      ],
+      "additionalProperties": false
+    },
+    "source": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "outer": {
+              "type": "string",
+              "description": "Collective 的一个 Required port"
+            }
+          },
+          "required": [
+            "outer"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "$ref": "#/$defs/seatport"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "look": {
+              "type": "string",
+              "description": "某个 Seat 的 Look"
+            }
+          },
+          "required": [
+            "look"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "notify": {
+              "type": "string",
+              "description": "某个 Seat 的 Notify"
+            }
+          },
+          "required": [
+            "notify"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "correct": {
+              "type": "string",
+              "description": "某个 Seat 的 Correct；收窄写在接收一方的 Required port 的 Port spec 里"
+            }
+          },
+          "required": [
+            "correct"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "self": {
+              "type": "string",
+              "description": "自己的一个 Provided port"
+            }
+          },
+          "required": [
+            "self"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "seatport": {
+      "type": "object",
+      "properties": {
+        "seat": {
+          "type": "string",
+          "description": "Seat 的名字"
+        },
+        "port": {
+          "type": "string",
+          "description": "这个 Seat 的一个 Provided port"
+        }
+      },
+      "required": [
+        "seat",
+        "port"
+      ],
+      "additionalProperties": false
+    },
+    "interface": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "signature": {
+          "type": "object",
+          "properties": {
+            "in": {
+              "type": "object",
+              "description": "开始时给的 Value 的 Schema，形状见 value.schema"
+            },
+            "out": {
+              "type": "object",
+              "description": "结束时给出的 Value 的 Schema"
+            }
+          },
+          "required": [
+            "in",
+            "out"
+          ],
+          "additionalProperties": false
+        },
+        "provides": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/portspec"
+          },
+          "description": "零个或多个；没有 out"
+        },
+        "requires": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/portspec"
+          }
+        }
+      },
+      "required": [
+        "description",
+        "signature",
+        "provides",
+        "requires"
+      ],
+      "additionalProperties": false
+    },
+    "portspec": {
+      "description": "一份 Port spec，单独成一个 Value：直接写出，或者顶层带 $defs、指向其中一份",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/port"
+        },
+        {
+          "$ref": "#/$defs/portref"
+        }
+      ]
+    },
+    "portref": {
+      "type": "object",
+      "properties": {
+        "$ref": {
+          "type": "string",
+          "description": "#/$defs/名字，指向这份 Port spec 顶层的 $defs"
+        },
+        "$defs": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/port"
+          },
+          "description": "只写在顶层"
+        }
+      },
+      "required": [
+        "$ref"
+      ],
+      "additionalProperties": false
+    },
+    "port": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "in": {
+          "type": "object",
+          "description": "交给它的 Value 的 Schema"
+        },
+        "attach": {
+          "$ref": "#/$defs/attach",
+          "description": "交给它时能附带哪些 Reference"
+        },
+        "out": {
+          "type": "object",
+          "description": "提供者在这一步给出结果时才有",
+          "properties": {
+            "value": {
+              "type": "object",
+              "description": "结果的 Schema"
+            },
+            "attach": {
+              "$ref": "#/$defs/attach",
+              "description": "结果能带来哪些 Reference"
+            }
+          },
+          "required": [
+            "value",
+            "attach"
+          ],
+          "additionalProperties": false
+        },
+        "$defs": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/port"
+          },
+          "description": "命名的 Port spec，供附带里的 $ref 指向；只写在顶层"
+        }
+      },
+      "required": [
+        "description",
+        "in",
+        "attach"
+      ],
+      "additionalProperties": false
+    },
+    "attach": {
+      "type": "object",
+      "description": "与 value.schema 里对象的写法相同，叶子是所指 Port 的 Port spec",
+      "properties": {
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/leaf"
+          },
+          "description": "写明的名字 → 所指 Port 的 Port spec"
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "必须带的名字"
+        },
+        "additionalProperties": {
+          "$ref": "#/$defs/leaf",
+          "description": "其余的名字：false 不接受；true 接受任意；给一份 Port spec 则名字任意、形状统一"
+        }
+      },
+      "required": [
+        "additionalProperties"
+      ],
+      "additionalProperties": false
+    },
+    "leaf": {
+      "anyOf": [
+        {
+          "type": "boolean",
+          "description": "在 properties 里只能是 true：这个名字接受任意 Port"
+        },
+        {
+          "$ref": "#/$defs/port"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "$ref": {
+              "type": "string",
+              "description": "#/$defs/名字，指向整份 Port spec 顶层的 $defs"
+            }
+          },
+          "required": [
+            "$ref"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

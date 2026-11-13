@@ -1,0 +1,10 @@
+{
+  "prefix": {
+    "instance": "i",
+    "handle": "h",
+    "event": "e"
+  },
+  "separator": "-",
+  "alphabet": "0123456789abcdefghijklmnopqrstuvwxyz",
+  "max_length": 80
+}

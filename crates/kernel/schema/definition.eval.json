@@ -1,0 +1,523 @@
+{
+  "in": {
+    "type": "object",
+    "properties": {
+      "birth": {
+        "type": "object",
+        "properties": {
+          "definition": {
+            "description": "完整 Definition 的 JSON 内容"
+          },
+          "bundle": {
+            "type": "string",
+            "description": "Definition Bundle ID"
+          },
+          "input": {
+            "type": "object",
+            "properties": {
+              "value": {},
+              "dependencies": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "description": "Bundle ID"
+                },
+                "description": "显式依赖根的集合；ID 排序、无重复"
+              }
+            },
+            "required": [
+              "value",
+              "dependencies"
+            ],
+            "additionalProperties": false
+          },
+          "seat": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "description"
+            ],
+            "additionalProperties": false
+          },
+          "roster": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "相邻 Seat → Instance"
+          }
+        },
+        "required": [
+          "definition",
+          "bundle",
+          "input"
+        ],
+        "additionalProperties": false
+      },
+      "results": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/result"
+        },
+        "description": "键 → 结果"
+      }
+    },
+    "required": [
+      "birth",
+      "results"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "incoming": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string"
+          },
+          "spec": {
+            "type": "object",
+            "description": "完整 Port spec，形状见 definition.schema 的 portspec"
+          }
+        },
+        "required": [
+          "handle",
+          "spec"
+        ],
+        "additionalProperties": false
+      },
+      "result": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/send_result"
+          },
+          {
+            "$ref": "#/$defs/receive_result"
+          }
+        ]
+      },
+      "send_result": {
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "ok": {
+                    "enum": [
+                      true
+                    ]
+                  },
+                  "value": {},
+                  "dependencies": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "description": "Bundle ID"
+                    },
+                    "description": "显式依赖根的集合；ID 排序、无重复"
+                  }
+                },
+                "required": [
+                  "ok",
+                  "value",
+                  "dependencies"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "ok": {
+                    "enum": [
+                      false
+                    ]
+                  },
+                  "error": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "description": "契约层的 use、denied、type、terminated，或 Language 定义的"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "data": {}
+                    },
+                    "required": [
+                      "kind",
+                      "message",
+                      "data"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "dependencies": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "description": "Bundle ID"
+                    },
+                    "description": "显式依赖根的集合；ID 排序、无重复"
+                  }
+                },
+                "required": [
+                  "ok",
+                  "error",
+                  "dependencies"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "attach": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/incoming"
+            }
+          },
+          "derived": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "handle": {
+                  "type": "string"
+                },
+                "revoker": {
+                  "$ref": "#/$defs/incoming"
+                }
+              },
+              "required": [
+                "handle",
+                "revoker"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "accepted": {
+            "type": "boolean",
+            "description": "请求依赖和附带通过检查，已由实际提供者接下；业务失败也可为 true"
+          }
+        },
+        "required": [
+          "outcome",
+          "attach",
+          "derived",
+          "accepted"
+        ],
+        "additionalProperties": false
+      },
+      "receive_result": {
+        "type": "object",
+        "properties": {
+          "arrival": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/$defs/arrival"
+              }
+            ]
+          }
+        },
+        "required": [
+          "arrival"
+        ],
+        "additionalProperties": false
+      },
+      "arrival": {
+        "type": "object",
+        "properties": {
+          "port": {
+            "type": "string"
+          },
+          "sender": {
+            "type": "string"
+          },
+          "via": {
+            "type": "string"
+          },
+          "delivery": {
+            "type": "object",
+            "properties": {
+              "value": {},
+              "dependencies": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "description": "Bundle ID"
+                },
+                "description": "显式依赖根的集合；ID 排序、无重复"
+              }
+            },
+            "required": [
+              "value",
+              "dependencies"
+            ],
+            "additionalProperties": false
+          },
+          "attach": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/incoming"
+            }
+          }
+        },
+        "required": [
+          "port",
+          "sender",
+          "via",
+          "delivery",
+          "attach"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "out": {
+    "anyOf": [
+      {
+        "type": "object",
+        "properties": {
+          "atoms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/atom"
+            }
+          }
+        },
+        "required": [
+          "atoms"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "done": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "ok": {
+                    "enum": [
+                      true
+                    ]
+                  },
+                  "value": {},
+                  "dependencies": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "description": "Bundle ID"
+                    },
+                    "description": "显式依赖根的集合；ID 排序、无重复"
+                  }
+                },
+                "required": [
+                  "ok",
+                  "value",
+                  "dependencies"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "ok": {
+                    "enum": [
+                      false
+                    ]
+                  },
+                  "error": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "description": "契约层的 use、denied、type、terminated，或 Language 定义的"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "data": {}
+                    },
+                    "required": [
+                      "kind",
+                      "message",
+                      "data"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "dependencies": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "description": "Bundle ID"
+                    },
+                    "description": "显式依赖根的集合；ID 排序、无重复"
+                  }
+                },
+                "required": [
+                  "ok",
+                  "error",
+                  "dependencies"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "required": [
+          "done"
+        ],
+        "additionalProperties": false
+      }
+    ],
+    "$defs": {
+      "target": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "port": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "port"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "handle": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "handle"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "atom": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/send"
+          },
+          {
+            "$ref": "#/$defs/receive"
+          }
+        ]
+      },
+      "send": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "send": {
+            "type": "object",
+            "properties": {
+              "to": {
+                "$ref": "#/$defs/target"
+              },
+              "delivery": {
+                "type": "object",
+                "properties": {
+                  "value": {},
+                  "dependencies": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "description": "Bundle ID"
+                    },
+                    "description": "显式依赖根的集合；ID 排序、无重复"
+                  }
+                },
+                "required": [
+                  "value",
+                  "dependencies"
+                ],
+                "additionalProperties": false
+              },
+              "attach": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/$defs/target"
+                }
+              }
+            },
+            "required": [
+              "to",
+              "delivery",
+              "attach"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "key",
+          "send"
+        ],
+        "additionalProperties": false
+      },
+      "receive": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "receive": {
+            "type": "object",
+            "properties": {
+              "ports": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sender": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "via": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "timeout": {
+                "type": "integer",
+                "description": "秒，0 不等待；不给一直等"
+              }
+            },
+            "required": [
+              "ports"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "key",
+          "receive"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

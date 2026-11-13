@@ -1,0 +1,141 @@
+# Value
+
+Value 是不可变的数据，按内容寻址。给出一个 Value，只给出信息：它不会变，持有它不能改动任何东西。
+
+## 形式
+
+Value 有两种：
+
+- **JSON**：null、布尔、数、字符串、数组、对象。
+- **字节**：任意字节序列，如文件的内容。
+
+```json value.limits
+{
+  "number_max": 9007199254740991,
+  "depth": 128,
+  "json_bytes": 16777216,
+  "raw_bytes": 268435456
+}
+```
+
+超出这些上限的不是 Value：
+
+- 数是有限的，绝对值不超过 `number_max`，即 2^53−1。数按 IEEE 754 双精度取值，超出的整数没有唯一的表示：9007199254740993 会悄悄变成 9007199254740992，两个不同的整数得到同一个 ID。要更大的整数，用字符串。
+- 字符串是良构的 Unicode：孤立的代理项不是 Value，规范文本是 UTF-8，写不出它。
+- 嵌套深度，即数组与对象的嵌套层数，标量是 0，不超过 `depth`。
+- JSON 的大小，即规范文本的 UTF-8 字节数，不超过 `json_bytes`。上限来自解析：Kernel 要解析它，不设上限，解析本身就能耗尽栈与内存。
+- 字节的大小不超过 `raw_bytes`。字节不解析，所以与 JSON 分开定；文件与其他二进制输入要放得下。
+
+数值选保守的一边：放宽只是让更多的东西成为 Value，已有的 ID 不变；收紧会让已存的 Value 不再合法。上限与格式一样，有了真实数据就难改，所以先小后大。
+
+## 内容寻址
+
+- JSON 的规范文本：对象的键按 UTF-16 码元排序；没有空白；数用 ECMAScript 的最短表示，负零写成 0。与 RFC 8785 一致。
+- ID 是 `sha256:` 加 SHA-256 的十六进制。JSON Value 用规范文本 UTF-8 字节的哈希，字节 Value 用字节本身的哈希；两者在同一个空间，因为 JSON Value 的字节就是它规范文本的 UTF-8。
+- 对象键的顺序不进入语义。两个 JSON Value 相等，当且仅当规范文本相同。
+- 相同的内容只有一个 ID；按一个 ID 读，读到的永远是同一份内容。重放与恢复依赖这一点。
+- 格式有了真实数据就难改：改它会改变所有 ID。
+
+## Schema
+
+JSON Value 的形状用 JSON Schema 的一个子集描述。同一份 Schema 既用来校验，也直接给 LLM 当工具参数的说明；LLM 的工具调用本来就用 JSON Schema，所以不另设类型系统。
+
+```json value.schema
+{
+  "description": "Schema 的 Schema：一份 Schema 是满足它的 JSON 对象。",
+  "$ref": "#/$defs/schema",
+  "$defs": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "type": { "$ref": "#/$defs/kind", "description": "值的种类" },
+        "description": { "type": "string", "description": "给人和 LLM 看的描述，不参与校验" },
+        "enum": { "type": "array", "description": "值必须等于其中之一" },
+        "items": { "$ref": "#/$defs/schema", "description": "数组每个元素的形状" },
+        "properties": { "type": "object", "additionalProperties": { "$ref": "#/$defs/schema" }, "description": "对象各字段的形状" },
+        "required": { "type": "array", "items": { "type": "string" }, "description": "对象必须有的字段" },
+        "additionalProperties": {
+          "anyOf": [{ "type": "boolean" }, { "$ref": "#/$defs/schema" }],
+          "description": "properties 之外的字段：false 不允许；给一份 Schema 则按它检查"
+        },
+        "anyOf": { "type": "array", "items": { "$ref": "#/$defs/schema" }, "description": "满足其中至少一个" },
+        "$defs": { "type": "object", "additionalProperties": { "$ref": "#/$defs/schema" }, "description": "可引用的命名形状，只写在顶层" },
+        "$ref": { "type": "string", "description": "引用顶层 $defs 里的形状，写作 #/$defs/名字" }
+      },
+      "additionalProperties": false
+    },
+    "kind": { "enum": ["null", "boolean", "number", "integer", "string", "array", "object"] }
+  }
+}
+```
+
+形状之外的规则：
+
+- 一份 Schema 里的关键字同时成立。空对象 `{}` 接受任何值。
+- integer 是值为整数的 number。enum 按 JSON 相等比较。
+- additionalProperties 缺省时，properties 之外的字段不受约束。
+- `$ref` 只引用同一份 Schema 顶层的 `$defs`，不引用外部：一份 Schema 自身完整，可以原样交给 LLM。
+- 未列出的关键字是错误，避免写了却不生效。
+- `$ref` 用来表达递归的形状；additionalProperties 可以是一份 Schema，用来表达映射。
+
+## Bundle
+
+Bundle 把一份内容及其显式依赖固定为不可变的整体，是 Value 的一种形状。Kernel 解释交付关系，内容的领域结构由使用方解释。
+
+```json value.bundle
+{
+  "type": "object",
+  "properties": {
+    "content": { "type": "string", "description": "JSON 或字节 Value 的 ID" },
+    "dependencies": { "$block": "value.dependencies" }
+  },
+  "required": ["content", "dependencies"],
+  "additionalProperties": false
+}
+```
+
+```json value.dependencies
+{
+  "type": "array",
+  "items": { "type": "string", "description": "Bundle ID" },
+  "description": "显式依赖根的集合；ID 排序、无重复"
+}
+```
+
+Bundle ID 是描述本身的内容 ID。内容相同、依赖不同，整体不同；原始内容的 ID 仍只指原始内容。依赖是已经成立的 Bundle，构建一批对象时按依赖在先的顺序建立，不能事后补边。因此闭包有限、无环，一份 Bundle ID 固定完整闭包。
+
+取得 Bundle 根，才能沿 dependencies 展开它的内容和依赖。单独读到符合 value.bundle 的 JSON 只取得这些字节；字符串、文件和任意 JSON 内出现的 ID 都不自动成为依赖。建立与交付必须检查资格，见 Reference 的「能读的 ID」。
+
+同一个 Bundle 可以被多次交付。Bundle 固定内容关系；谁在什么位置取得它，由 Journal 的交付事实解释。信息给出后不能撤回，行动权仍由 Reference 承担。
+
+遍历用显式栈与节点去重，不按递归深度消耗宿主栈。宿主明确配置每次操作的节点、读取字节和写入字节预算；耗尽按宿主故障处理，调整预算后可继续，不改变已有 Bundle 的含义。缓存不代替授权检查。
+
+### 交付
+
+信息边界共用数据与显式依赖。Signature、Port 的 Schema 校验 value，dependencies 由 Kernel 查建立者或交付者的资格，不由领域 Schema 推断。
+
+```json value.delivery
+{
+  "type": "object",
+  "properties": {
+    "value": {},
+    "dependencies": { "$block": "value.dependencies" }
+  },
+  "required": ["value", "dependencies"],
+  "additionalProperties": false
+}
+```
+
+记录把 value 存成内容 ID，依赖原样固定在记录中；会话传实际 JSON。空依赖表示只交出数据。Reference 附带是另一条轴，形状在 Definition。
+
+案例：A 给 B 一个目录 Bundle，文件随闭包可读；A 给 B 一个写着秘密 ID 的文件，B 只能读到文件。相同内容可配不同依赖，各有完整身份。难改的点是规范编码、依赖解释和哪些记录建立资格，三者分别在本文与 Reference、Journal 定义。
+
+## 实现
+
+内容库本地按 ID 分目录存文件，云上用对象存储。Value 不进记录库的事务；按内容寻址，换后端与换数据库互不牵连。
+
+## 待定
+
+- Schema 没有 maxLength，单条消息的长度写不进 Schema；加是增量。长度只看形式就能判定，按刚性的分界该由通道强制。场景：群聊房间。
+- 内容库随对话增长：每轮 llm 的 messages 都是新 Value，按整份存，存储随轮数平方增长。分块去重可以只在存储层做，ID 仍按整份的规范文本算，不改 llm 的形状，所以能等实测再做（推断）。场景：W0 持续对话。
+

@@ -1,0 +1,107 @@
+# W0 交办给子 Agent
+
+场景：W0 把一处修改交办给子 Agent S，等它结束，审过交回的 快照 Bundle 再并入。root entry 一侧与 Reconnect 相同，整本引用。W0 以自己当前的 快照 Bundle 为 S 的初始 快照 Bundle，接上 engine 与 exec；向 Notify 登记时附带接到自己 done 上的 back，按 via 取；审阅与并入合成一次 exec，挂上 S 交回的 快照 Bundle。
+
+这里定义 W0 交办的前缀 `w0.spawn`、登记 `w0.wait`、到达 `w0.arrival` 与收尾 `w0.finish`，S 的 `s.work` 与 `s.journal`，供 Quick、Forge、Race 引用。
+
+```json scenario.delegate
+{
+  "values": {
+    "sha256:spawns": {"definition": "sha256:ds","input": {"value": {"task": "fix","snapshot": "sha256:repo"},"dependencies": ["sha256:repo"]},"seats": {},"self": {}},
+    "sha256:sin": {"$block": "scenario.delegate#/values/sha256:spawns/input/value"},
+    "sha256:merge": {"snapshot": "sha256:repo","argv": ["merge","/mnt/s"],"mounts": {"s": "sha256:repo2"},"stdin": "","timeout": 60}
+  },
+  "parts": {
+    "spawned": {
+      "outcome": {"ok": true,"value": null,"dependencies": []},
+      "attach": {
+        "look": {"handle": "h-slook","spec": {"$block": "reference.kernel#/look"}},
+        "notify": {"handle": "h-snotify","spec": {"$block": "reference.kernel#/notify"}},
+        "correct": {"handle": "h-scorrect","spec": {"$block": "reference.kernel#/correct"}}
+      },
+      "derived": {
+        "engine": {"handle": "h-sengine","revoker": {"handle": "h-rev5","spec": {"$block": "reference.kernel#/revoke"}}},
+        "exec": {"handle": "h-sexec","revoker": {"handle": "h-rev6","spec": {"$block": "reference.kernel#/revoke"}}}
+      },
+      "accepted": true
+    },
+    "w0.spawn": [
+      {"$block": "scenario.reconnect#/parts/w0.birth"},
+      {
+        "by": "self",
+        "event": "e-sborn",
+        "what": {
+          "send": {
+            "key": "spawn",
+            "to": {"port": "instantiate"},
+            "ref": "h-w0inst",
+            "attach": {"engine": {"to": {"port": "engine"},"ref": "h-w0engine"},"exec": {"to": {"port": "exec"},"ref": "h-w0exec"}},
+            "result": {"$block": "scenario.delegate#/parts/spawned"},
+            "delivery": {"value": "sha256:spawns","dependencies": ["sha256:ds","sha256:repo"]}
+          }
+        }
+      }
+    ],
+    "w0.wait": {
+      "by": "self",
+      "what": {
+        "send": {
+          "key": "wait",
+          "to": {"handle": "h-snotify"},
+          "ref": "h-snotify",
+          "attach": {"to": {"to": {"port": "back"},"ref": "h-w0back"}},
+          "result": {
+            "outcome": {"ok": true,"value": null,"dependencies": []},
+            "attach": {},
+            "derived": {"to": {"handle": "h-sdone","revoker": {"handle": "h-rev7","spec": {"$block": "reference.kernel#/revoke"}}}},
+            "accepted": true
+          },
+          "delivery": {"value": "sha256:empty","dependencies": []}
+        }
+      }
+    },
+    "w0.arrival": {"by": "i-s","event": "e-send","what": {"arrival": {"port": "done","sender": "i-s","via": "h-sdone","attach": {},"delivery": {"value": "sha256:out","dependencies": ["sha256:repo2"]}}}},
+    "w0.finish": [
+      {
+        "by": "self",
+        "what": {
+          "send": {
+            "key": "merge",
+            "to": {"port": "exec"},
+            "ref": "h-w0exec",
+            "attach": {},
+            "result": {"$block": "scenario.reconnect#/parts/edit"},
+            "delivery": {"value": "sha256:merge","dependencies": ["sha256:repo","sha256:repo2"]}
+          }
+        }
+      },
+      {"$block": "scenario.reconnect#/parts/w0.end"}
+    ],
+    "s.work": [
+      {"by": "i-w0","event": "e-sborn","what": {"birth": {"definition": "sha256:ds","wire": {"engine": "h-sengine","exec": "h-sexec"},"input": {"value": "sha256:sin","dependencies": ["sha256:repo"]}}}},
+      {
+        "by": "self",
+        "what": {"send": {"key": "llm1","to": {"port": "engine"},"ref": "h-sengine","attach": {},"result": {"$block": "scenario.reconnect#/parts/llm"},"delivery": {"value": "sha256:prompt","dependencies": []}}}
+      },
+      {
+        "by": "self",
+        "what": {"send": {"key": "edit","to": {"port": "exec"},"ref": "h-sexec","attach": {},"result": {"$block": "scenario.reconnect#/parts/edit"},"delivery": {"value": "sha256:edit","dependencies": ["sha256:repo"]}}}
+      }
+    ],
+    "s.journal": [{"$block": "scenario.delegate#/parts/s.work"},{"by": "self","event": "e-send","what": {"end": {"$block": "scenario.reconnect#/values/sha256:out"}}}]
+  },
+  "journals": {
+    "i-root": {"$block": "scenario.reconnect#/journals/i-root"},
+    "i-w0": [
+      {"$block": "scenario.delegate#/parts/w0.spawn"},
+      {"$block": "scenario.delegate#/parts/w0.wait"},
+      {"$block": "scenario.delegate#/parts/w0.arrival"},
+      {"by": "self","what": {"receive": {"key": "take","filter": {"ports": ["done"],"via": ["h-sdone"]},"result": 3}}},
+      {"$block": "scenario.delegate#/parts/w0.finish"}
+    ],
+    "i-s": {"$block": "scenario.delegate#/parts/s.journal"}
+  }
+}
+```
+
+参考：README.md（格式、脚手架）；Reconnect.md；../README.md（场景）。

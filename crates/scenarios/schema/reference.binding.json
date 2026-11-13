@@ -1,0 +1,53 @@
+{
+  "type": "object",
+  "properties": {
+    "sources": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kernel": {
+                "enum": [
+                  "pack",
+                  "construct",
+                  "instantiate"
+                ]
+              },
+              "spec": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "kernel",
+              "spec"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "host": {
+                "type": "string",
+                "description": "宿主恢复身份"
+              },
+              "spec": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "host",
+              "spec"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "sources"
+  ],
+  "additionalProperties": false
+}

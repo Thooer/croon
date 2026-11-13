@@ -1,0 +1,28 @@
+[package]
+name = "kernel"
+description = "Croon 的 Kernel：守护进程，一个系统一台机器。"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[features]
+default = ["runtime"]
+runtime = ["dep:rusqlite", "dep:tokio", "dep:tracing", "dep:tracing-subscriber"]
+
+[[bin]]
+name = "kernel"
+path = "src/main.rs"
+required-features = ["runtime"]
+
+[dependencies]
+croon-eval = { path = "../eval" }
+rusqlite = { workspace = true, optional = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, optional = true }
+tracing = { workspace = true, optional = true }
+tracing-subscriber = { workspace = true, features = ["fmt"], optional = true }
+
+# build.rs 用它取出文档里带名字的 block。

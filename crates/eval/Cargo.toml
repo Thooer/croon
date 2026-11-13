@@ -1,0 +1,14 @@
+[package]
+name = "croon-eval"
+description = "Croon 的形状与校验：Value、Schema、Definition 的形状，与 Language 的求值契约。"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+thiserror = { workspace = true }
+
+# build.rs 用它取出文档里带名字的 block。
