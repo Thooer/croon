@@ -59,7 +59,7 @@ Kernel 是组合的基座，兼容是设计的一部分：别的 Agent 框架有
 
 ### 检查
 
-代码使用的 JSON 形状以 `crates/*/schema/*.json` 为权威，并由各 crate 通过 `include_str!` 编译进来。测试直接验证保证和失败原因；不设文档行数、token 或提交钩子检查。
+代码使用的 JSON 形状以 `crates/*/schema/*.json` 为权威，并由各 crate 通过 `include_str!` 编译进来。测试直接验证保证和失败原因；不设文档行数、token、提交钩子或文档引用的自动检查。
 
 ### 文件边界
 
