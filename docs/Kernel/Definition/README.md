@@ -1,11 +1,11 @@
 # Definition
 
-Definition 是 Bundle 中的 JSON，规定 Cognizer 的 Interface；有 Implementation 的，还固定内部做法。专指一份 Definition 的 ID 时，写的是完整 Bundle ID。
+Definition 是 Bundle 中的 JSON，规定主体的 Interface；有 Implementation 的，还固定内部做法。专指一份 Definition 的 ID 时，写的是完整 Bundle ID。
 
-- **不修改，只替换。** 改变工作方式，就是构造一份新的 Definition。这样，已经发生的事有确定的来由；授权只收窄，不需要为自我修改开例外；制造别的 Cognizer 和改变自己是同一种操作。
-- **不行动，所以不带权利。** 构造一份 Definition 不接触世界，不需要授权检查。但运行中的 Cognizer 要构造，仍得接上构造的 Port：能不能造东西，和其他运行时的灵活性一样，由接线决定。同一份 Definition 可以约束多个 Cognizer。
+- **不修改，只替换。** 改变工作方式，就是构造一份新的 Definition。这样，已经发生的事有确定的来由；授权只收窄，不需要为自我修改开例外；制造别的主体和改变自己是同一种操作。
+- **不行动，所以不带权利。** 构造一份 Definition 不接触世界，不需要授权检查。但运行中的主体要构造，仍得接上构造的 Port：能不能造东西，和其他运行时的灵活性一样，由接线决定。同一份 Definition 可以约束多个主体。
 - **是数据。** 冻结、比较、复用、运行前检查，都要求它是能查看的数据。它比任意程序约束更强，比配置表达力更强。Croon 只接受 Definition 的数据；宿主代码里的构造器只是前端，由可信的库作者在 Croon 之外运行，产出的仍是数据。
-- **承载功能，不承载意志。** 它只被实例化：功能要一个 Instance 来兑现，一个 Principal 来拿到，见 ../README.md 的「Cognizer」。一份 Definition 不嵌进另一份里求值。
+- **承载功能，不承载意志。** 它只被实例化：功能要一个 Instance 来兑现，一个 Principal 来拿到，见 ../README.md 的「主体」。一份 Definition 不嵌进另一份里求值。
 
 组成形式与名称关系见 ../../README.md 的「分类与关系」。本文讲 Interface、Implementation 与 Charter；Shape.md 给出形状与构造检查，Cognition.md 给出求值契约、body 的边界与失败。
 
@@ -33,9 +33,9 @@ Port 有一份描述、in、附带的声明，有的还有 out。Port spec 单�
 - **附带的声明**：交给它时，能随 Value 带上哪些 Reference。写法与 value.schema 里对象的写法相同，只是叶子是所指 Port 的 Port spec：properties 写明名字与各自的 Port spec，required 列出必须带的，additionalProperties 管其余的名字：false 是不接受，给一份 Port spec 是名字任意、形状统一，如聚合者收 N 个投票者的 Port，true 是接受任意。叶子写 true 表示这个名字接受任意 Port。additionalProperties 必须写出，没有默认：以后补一个默认是增量，现在定了默认，以后再改就改变了已冻结的 Definition 的意思。additionalProperties 不是 true、叶子也没有 true 的，构造时算得出它能拿到哪些 Reference 的上限。写在一个位置上的声明就是对经过这里的 Reference 的收窄，规则在 Reference。
 - **out**：提供者在这一步给出结果的 Port 才有，如 Kernel 的 Port、外部服务。Provided port 没有 out：交给 Instance 的只被记下，什么时候处理、回不回，由它的 Definition 决定。要回复，就声明回话途径：附带给对方、供它交回回复的 Reference，所指 Port 的 in 是回复的形状。它可以指向自己，也可以指向第三方。连接不默认双向：默认双向表达不了“只给一个方向”；要双向就两边都给。一问一答、多轮、反问、推送都是附带的嵌套，是扩展的用法。
 
-Provided port 是它对外提供的服务。不同的 Provided port 是不同的权利，可以交给不同的一方，如一项服务的使用与管理。Required port 接上什么由别人决定：实例化时接上 Reference，运行中由持有 Correct 的一方授予、收回。读取、暂停、授予这些 Control，对所有 Cognizer 都一样，作者不能选择"不被暂停"，所以不写进 Interface。Control 是 Kernel 提供的三个 Port：Look、Notify、Correct（JSON 里是 look、notify、correct）。名字定在这里，Charter 才能接；有哪些操作在 Instance，形状在 Port。
+Provided port 是它对外提供的服务。不同的 Provided port 是不同的权利，可以交给不同的一方，如一项服务的使用与管理。Required port 接上什么由别人决定：实例化时接上 Reference，运行中由持有 Correct 的一方授予、收回。读取、暂停、授予这些 Control，对所有主体都一样，作者不能选择"不被暂停"，所以不写进 Interface。Control 是 Kernel 提供的三个 Port：Look、Notify、Correct（JSON 里是 look、notify、correct）。名字定在这里，Charter 才能接；有哪些操作在 Instance，形状在 Port。
 
-设计 Interface 时信任对方的 Competence：不假设对方会误解意图，不在 Interface 里设防。对方真的做不到，是 Competence 不匹配，应换一个更合适的。同质的 Cognizer 犯相关的错，这类错由独立的检验去防，不靠 Interface。
+设计 Interface 时信任对方的 Competence：不假设对方会误解意图，不在 Interface 里设防。对方真的做不到，是 Competence 不匹配，应换一个更合适的。同质的主体犯相关的错，这类错由独立的检验去防，不靠 Interface。
 
 
 ## 完整身份与构造
@@ -54,7 +54,7 @@ construct 成功的记录建立关于完整 Bundle 的正面事实，按 ID 索�
 
 例如，执行者接上模型和 exec，检验者接上执行者的 Look 与只能暂停的 Correct；两边的 Port 都不接收附带。写成 Charter，执行者够不到检验者的权利，也不能暂停它；持有整体 Correct 的一方也只能按「刚性」改变接线。若改成同一个 body 里的两份上下文，它们用的是同一份 c-list，函数间的限制由 Language 与程序自身承担；独立的权利边界随 Instance 建立。
 
-复用代码靠固定内容依赖与 Language 的模块机制：函数没有自己的 Interface，用调用方的权利，Atom 归调用方。复用 Cognizer 靠实例化，有自己的身份、权利与 Journal。要约束被复用的一方，就实例化一个接线更窄的 Instance。
+复用代码靠固定内容依赖与 Language 的模块机制：函数没有自己的 Interface，用调用方的权利，Atom 归调用方。复用主体靠实例化，有自己的身份、权利与 Journal。要约束被复用的一方，就实例化一个接线更窄的 Instance。
 
 没有采用：
 
@@ -63,7 +63,7 @@ construct 成功的记录建立关于完整 Bundle 的正面事实，按 ID 索�
 - 用一个编排者代替 Charter 的分权：编排者实例化全部成员、持有全部 Control，结构依赖它的代码按约定使用权利。需要固定的分权关系用 Charter；运行中决定的组建由 Instance 实例化。
 - 比身份轻的权利边界，如 body 里的一段：段只有 Language 知道，按段分 c-list，保证就从 Kernel 降到 Language；给段独立的身份，它就是成员。
 
-一个 Cognizer 承担 Definition，Kernel 查形状、接线与每次交出；做法能否完成功能，由选定它的 Principal 判断。独立检验能观察什么、纠正什么，由 Reference 分配；模型和上下文怎样配备属于具体做法。
+一个主体承担 Definition，Kernel 查形状、接线与每次交出；做法能否完成功能，由选定它的 Principal 判断。独立检验能观察什么、纠正什么，由 Reference 分配；模型和上下文怎样配备属于具体做法。
 
 
 ## Charter
@@ -76,7 +76,7 @@ Seat 以 Interface 要求成员，描述就是职责。占它的 Definition 要�
 
 Seat 可以用 pin 写死 Definition，连同它的 Signature 的 in；没有写死的，在实例化时注入。需要归 Charter 固定的规则，如计票、房间、闸门、熔断，写在被 pin 的 Definition 里；允许 Principal 选择的做法，如评审与工人，留给实例化。pin 固定选中的 Definition 与输入；规则怎样落实，须检查那份 Definition。Entry 的外部程序不在 Definition 里，pin 它也固定不了系统外的做法。
 
-成员在 Collective 的一生里固定，Kernel 不换人。能换，"Seat 现在由谁占"就是可变状态，要有一本 Journal 解释它，而 Collective 没有行为；新人接哪些工作、旧人做完哪些、什么时候退下，是迁移的策略，Kernel 不预设。要换的，是整个 Collective，或某个成员委托出去的 Agent。历史发生在 Cognizer 身上：一个 Seat 上、一件任务里发生过什么，都从 Journal 投影出来。
+成员在 Collective 的一生里固定，Kernel 不换人。能换，"Seat 现在由谁占"就是可变状态，要有一本 Journal 解释它，而 Collective 没有行为；新人接哪些工作、旧人做完哪些、什么时候退下，是迁移的策略，Kernel 不预设。要换的，是整个 Collective，或某个成员委托出去的 Agent。历史发生在主体身上：一个 Seat 上、一件任务里发生过什么，都从 Journal 投影出来。
 
 成员是结构保证存在的，在 Seat 上；参与者是任何持有某个成员的 Port 的一方，可以在运行中经附带加入，如群聊中途进来的人。已有的 Instance 或外部服务不占 Seat：它们由别处产生，不随 Collective 结束，只能接到 Collective 的 Required port 上，供成员使用。
 
@@ -128,4 +128,4 @@ Charter 承诺的是接线与写死的规则，不承诺成员的状态。成员
 - 第五种来源：Collective 自己的 Look 与 Notify 能不能接给成员。Correct 不能：纠正整体就纠正了成员自己，全组熔断用几份对成员的暂停组合出来。与它相关：导出只能导 Provided port，Principal 要单独纠正某个成员，得设一个管理 Seat 接上那个成员的 Correct，再导出它的 Port，多一跳；是否允许直接导出某个成员的 Correct。Principal 参与自己实例化的 Collective 要不要单独的机制，与这一条一起定。场景：嵌套、Principal 参与自己实例化的 Collective、熔断之后。
 - 整份 Interface 是否也单独按内容寻址。Port spec 已经单独成一个 Value。没有场景：现在没有按 ID 引用一份 Interface 的地方。
 
-参考：../../README.md（分类与关系）；../README.md（Cognizer）；../Value.md（JSON、Schema、内容寻址）；Shape.md（形状、构造时检查）；Cognition.md（求值器在系统外）；../Port.md（待定）。
+参考：../../README.md（分类与关系）；../README.md（主体）；../Value.md（JSON、Schema、内容寻址）；Shape.md（形状、构造时检查）；Cognition.md（求值器在系统外）；../Port.md（待定）。

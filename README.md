@@ -1,6 +1,6 @@
 # Croon Kernel
 
-Croon Kernel 是一个持久执行的制度机内核。它以 Cognizer 为行动主体，以 Reference 表达权利，以 Journal 记录事实，以 Value 和 Bundle 交付不可变内容，以 Definition 描述主体的接口与做法。
+Croon Kernel 是一个持久执行的制度机内核。它以主体为行动单位，以 Reference 表达权利，以 Journal 记录事实，以 Value 和 Bundle 交付不可变内容，以 Definition 描述主体的接口与做法。
 
 Kernel 不预设智能体、模型或工具。模型、文件执行、Language 和 Library 都是接入 Kernel 的提供者或扩展。Kernel 只强制由自身保证推出的规则：行动可追溯、已发生的事不失真、Look/Notify/Correct 分离、授权只收窄。
 

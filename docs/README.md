@@ -29,7 +29,7 @@ Definition、Bundle、Schema 与 Port spec 是 Value 的形状；Journal 保存 
 
 ## 分类与关系
 
-Cognizer 是能行动并维持状态连续性的主体，可以是人、程序或它们组成的整体。系统内的 Cognizer 以 Instance 存在，分类按行动由谁承担：
+主体是能行动并维持状态连续性的单位，可以是人、程序或它们组成的整体。系统内的主体以 Instance 存在，分类按行动由谁承担：
 
 | 组成 | 行动与权利 | Definition 的做法 |
 |---|---|---|
@@ -84,7 +84,7 @@ P 委托 Individual A，A 使用两套上下文、两个模型，又委托 B。A
 
 | English | 中文 | 正文 | 用法 |
 |---|---|---|---|
-| Cognizer | 主体 | 英 | 系统内的分类见「分类与关系」 |
+| Cognizer | 主体 | 中 | 系统内的分类见「分类与关系」 |
 | Kernel | 内核 | 英 | |
 | Institution Machine | 制度机 | 中 | Kernel 执行规则、权利与事实所承担的抽象，见 Kernel/README.md |
 | root | 根 | 中 | 只指系统外、造成诞生的一方，记录里写作 outside |

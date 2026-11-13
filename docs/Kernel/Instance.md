@@ -1,6 +1,6 @@
 # Instance
 
-Instance 按诞生时的 Definition 存续，是可变状态的主人。body 携带的状态由已记录结果重放恢复；Entry 的程序位置在系统外。不可变快照可以共享，采用哪份快照是程序自己的状态。需要持续维护正式状态时，由一个 Cognizer 持有当前位置并按规则提供服务；谁负责沿来处解释。
+Instance 按诞生时的 Definition 存续，是可变状态的主人。body 携带的状态由已记录结果重放恢复；Entry 的程序位置在系统外。不可变快照可以共享，采用哪份快照是程序自己的状态。需要持续维护正式状态时，由一个主体持有当前位置并按规则提供服务；谁负责沿来处解释。
 
 由 Cognition 驱动的 Individual 一生只求值一次 body。跨多次交互的状态由 body 自己携带，比如 loop 的状态，重放时自然恢复，不需要另设存状态的地方。没有采用的做法是每交来一项就求值一次：那样携带的状态在两次之间就丢了，要另造一处可变状态，还得再规定它怎样声明、谁来接上。Entry 由客户端按求值契约驱动，不求值 body；Collective 没有 body，见「产生与结束」。
 ## 构成
@@ -72,7 +72,7 @@ Kernel 不提供默认工作区或当前产物。程序从 Signature 的输入�
 
 实例化产生一个 Instance：Kernel 写下它的诞生，记着完整 Definition Bundle、输入交付和每个 Required port 接上的 Reference。它立即开始运行，实例化的一方不等它。实例化的一方得到它每个 Provided port 的 Reference，加上对它的 Look、Notify 与 Correct，可以分开转交。来处有两种：
 
-- **委托**：实例化它的一方是 Principal，它是 Agent。实例化的一方是成员的，Principal 是它所属的 Collective，见「委托」。Agent 是这个位置，不是 Cognizer 的同义词；成员的来处是 Collective，不是 Agent。
+- **委托**：实例化它的一方是 Principal，它是 Agent。实例化的一方是成员的，Principal 是它所属的 Collective，见「委托」。Agent 是这个位置，不是主体的同义词；成员的来处是 Collective，不是 Agent。
 - **成员**：随所属的 Collective 一起产生、一起结束。
 
 沿来处往上只有一条路，到根为止；路上经过一个 Instance 的，都是它的后代。
@@ -95,7 +95,7 @@ Control 是 Kernel 提供的、作用在一个 Instance 上的三个 Port：交�
 | Correct | 授予 / 收回 | 把一个 Reference 放进它的某个 Required port / 拿掉 | 是 |
 
 - Control 交给实例化的一方；持有者可以把它们分开转交，如 Look 给审计者、Notify 给等结果的一方、Correct 给熔断者。执行者不持有指向自己的 Correct，修正权由此独立。成员实例化的 Instance，来处是 Collective，Control 仍在实例化它的成员手里：Collective 没有 body，拿到也用不了。
-- Control 不沿实例化往下够：持有对 A 的 Control，够不到 A 实例化出的 B。要够到，由 Principal 组合，如让一个保管者代为实例化并保管 Control；够到多深、在什么条件下够到，是决策权的分配，因场景而异，没有普遍最优。A 要是能从别处拿到 instantiate，就绕得开；它的 Port 不接受任意附带时，这个上限构造时算得出。不把可达定为默认，还因为以后给已发出的 Control 加上可达，是事后扩大权利；以后要原生的可达，是一种显式申请的新 Control，是增量。全局调试同理：根要在 Cognizer 这一层看全部 Instance，就这样组合；否则是宿主上的事。
+- Control 不沿实例化往下够：持有对 A 的 Control，够不到 A 实例化出的 B。要够到，由 Principal 组合，如让一个保管者代为实例化并保管 Control；够到多深、在什么条件下够到，是决策权的分配，因场景而异，没有普遍最优。A 要是能从别处拿到 instantiate，就绕得开；它的 Port 不接受任意附带时，这个上限构造时算得出。不把可达定为默认，还因为以后给已发出的 Control 加上可达，是事后扩大权利；以后要原生的可达，是一种显式申请的新 Control，是增量。全局调试同理：根要在主体这一层看全部 Instance，就这样组合；否则是宿主上的事。
 - Control 分成三个 Port，不靠收窄一个 Port 来分：每个 Port 的附带声明是固定的；等结束最常见，只要结束状态，读取给出整本 Journal，分开就能只给前者；「执行者不持有指向自己的 Correct」只看 Reference 指向哪个 Port，是结构上的事实，不必分析一份收窄过的 Port spec 还能不能纠正。Look 与 Notify 在目标那里不留记录，Correct 留。一个 Port 里再收窄，如只能暂停，是一份更窄的 Port spec。
 - 对 Collective 的 Control，Correct 只作用在整体，Correct 的 in 里没有路径：暂停、解除暂停是对全部成员的一次事件；授予、收回 Collective 自己的一个 Required port，改接所有接到它的位置。Look 与 Notify 可以带一个 Seat 的路径，指到占着它的成员；那个成员是 Collective 的，可以再往下指；不带路径的对的是 Collective 自己。理由：带路径的授予、收回、暂停，能在 Charter 的 ID 不变时把结构改掉，如撤掉审计者的 Look、把分开的 Reference 凑到一个成员身上，依赖这份 Charter 的一方就被骗了。要单独纠正某个成员，写进 Charter：把它的 Correct 接给熔断者或管理 Seat。成员之间的接线怎样才会变，见 Definition 的 Charter 刚性。
 - 施加 Control 是施加者的一次交出，记在施加者的 Journal 里；暂停、解除暂停、授予、收回在目标那里是别人造成的记录。
@@ -108,10 +108,10 @@ Control 是 Kernel 提供的、作用在一个 Instance 上的三个 Port：交�
 
 ## 委托
 
-- 要不要委托、委托给谁、Agent 是什么样，由 Cognizer 自己选：从已有的 Definition 里选，自己构造一份，或请别人造。不满意就换。它能做到哪一步，看它接上了哪些 Port。别人通过对话要求它委托，只是提供信息。
+- 要不要委托、委托给谁、Agent 是什么样，由主体自己选：从已有的 Definition 里选，自己构造一份，或请别人造。不满意就换。它能做到哪一步，看它接上了哪些 Port。别人通过对话要求它委托，只是提供信息。
 - Agent 对交付的结果负责，也对自己发起的委托负责。它委托出去的 Agent 属于它，不属于它的 Principal。
 - 结果以数据与显式依赖交回；文件快照也是 Bundle，由接收方决定采用或合并。Agent 的独立执行不修改 Principal 携带的状态。
-- "拥有一个 Cognizer"分三样：持有它的 Provided port（能把活交给它）、持有它的 Control（能纠正）、是它的来处（对它负责）。前两样是 Reference，可以交给不同的 Cognizer。要让使用者碰不到某个 Reference，Agent 的来处应是持有它的一方，再把 Provided port 转交给使用者。Charter 里的上级至多有前两样，而且是 Charter 写明、收窄过的；第三样归 Collective。上级扩大不了自己的权利，要改就换 Charter；下级听不听，是下级的 Definition 怎样对待交来的东西。
+- "拥有一个主体"分三样：持有它的 Provided port（能把活交给它）、持有它的 Control（能纠正）、是它的来处（对它负责）。前两样是 Reference，可以交给不同的主体。要让使用者碰不到某个 Reference，Agent 的来处应是持有它的一方，再把 Provided port 转交给使用者。Charter 里的上级至多有前两样，而且是 Charter 写明、收窄过的；第三样归 Collective。上级扩大不了自己的权利，要改就换 Charter；下级听不听，是下级的 Definition 怎样对待交来的东西。
 - 成员没有自己的财产：它的权利全部来自 Collective，经 Charter 接给它，所以它用这些权利产生的 Instance，来处是 Collective，Principal 也是 Collective；Journal 里记着是哪个成员做的。就像员工盖公章签的合同属于公司。所属的 Collective 本身也是成员的，再往上，直到经委托产生的那一层。
 
 
@@ -122,7 +122,7 @@ Control 是 Kernel 提供的、作用在一个 Instance 上的三个 Port：交�
 没有采用的做法有两种：
 
 - 把同一性挂在工作上：权利、责任、历史都在 Instance 上，追责要沿 Instance 一直追到底。
-- 让一个 Cognizer 跨越不同的 Definition 延续：Journal 要按 Definition 分段，Interface 随时间变化，换 Implementation 时别人手里的 Reference 要失效。别人依赖的连续，其实是一个地址：由一个 Cognizer 提供，别人持有它的 Port，它把交来的转给现在做这件事的 Instance，这个地址上的历史就是它的 Journal。以后转交的那一跳成了负担，Kernel 可以按那个 Cognizer 给出的路由直接解析，语义不变，是增量。委托之下没有 Seat，Agent 属于它的 Principal，换 Agent 就是换一个人；Charter 的成员也不换，见 Definition 的 Charter。
+- 让一个主体跨越不同的 Definition 延续：Journal 要按 Definition 分段，Interface 随时间变化，换 Implementation 时别人手里的 Reference 要失效。别人依赖的连续，其实是一个地址：由一个主体提供，别人持有它的 Port，它把交来的转给现在做这件事的 Instance，这个地址上的历史就是它的 Journal。以后转交的那一跳成了负担，Kernel 可以按那个主体给出的路由直接解析，语义不变，是增量。委托之下没有 Seat，Agent 属于它的 Principal，换 Agent 就是换一个人；Charter 的成员也不换，见 Definition 的 Charter。
 
 不存在原地修改正在运行的 Instance。Definition 是运行时的数据，构造完就能实例化，不需要编译，所以效果上可以随时改。Language 写在 Definition 里，所以换 Language 也是接替；旧 Instance 按旧 Language 重放，不受影响。
 
