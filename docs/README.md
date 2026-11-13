@@ -1,6 +1,8 @@
 # 文档
 
-Croon 是什么、讨论与写作的规则，见仓库根的 README 与 AGENTS。本文件只说概念：系统由哪些部分构成、依赖什么、引用往哪个方向，以及想问什么去哪里读。
+Croon 是什么、讨论与写作的规则，见仓库根的 README 与 AGENTS。本文件只说 Kernel 这一层：系统由哪些部分构成、依赖什么、引用往哪个方向，以及想问什么去哪里读。
+
+本仓库是三个仓库里最低的一层，只含 Kernel 与它对外公布的契约。Language 的求值器在 croon-lang0，目录、模型、Library 与 Application 在 croon-app。它们依赖本仓库，本仓库不认识它们的任何形状。
 
 ## 骨架
 
@@ -10,21 +12,20 @@ Croon 是什么、讨论与写作的规则，见仓库根的 README 与 AGENTS�
 - **Instance**：可变状态的主人，每次变化由它自己的 Journal 解释。
 - **Reference**：唯一的权利，由 Kernel、别的 Instance 或外部服务提供。
 
-Definition、Bundle、Schema 与 Port spec 是 Value 的形状；Tree 是 Directory 解释的目录内容；Journal 保存 Instance 的事实。前四行是 Kernel 的机制；Directory 与 Model 是提供者一侧的领域规格；Language 的求值器与 Plugin 当前由根装；Library 在 Kernel 之外。通用 Kernel 与智能体用例的边界见 Kernel/README.md 的「制度机」，实现分离的任务见 Plan.md 的「内核分离」。
+Definition、Bundle、Schema 与 Port spec 是 Value 的形状；Journal 保存 Instance 的事实。Language 的求值器与 Plugin 由根装；Directory、Model 与 Library 在 Kernel 之外，是提供者一侧的领域规格。通用 Kernel 与智能体用例的边界见 Kernel/README.md 的「制度机」，实现分离的任务见 Plan.md 的「内核分离」。
 
 | 部分 | 承担 | 依赖 |
 |---|---|---|
 | Value | 内容寻址、Schema、Bundle | 无 |
-| Directory | Tree、路径、导入与物化 | Value |
 | Definition | Interface 与 Implementation：Signature、Port、附带；求值契约；Charter 与 Seat | Value、Bundle |
 | Instance | 身份与 Journal、重放、同一性、来处、执行、Control；Collective 的产生与结束 | Value、Definition |
 | Reference | 持有、Handle、接上、附带、撤销、收窄、通道；Kernel 的 Port | Value、Definition、Instance |
 | Language | body 求值器的插口：契约、ID 与版本、守什么 | Definition、Instance |
 | Plugin | 宿主代码：实现 Language，或提供现有 Port 组合不出来的能力；由根装，可信由根承担 | Definition、Reference |
-| Model | 模型服务的 Port 形状 | Value、Reference |
-| Library | 预置的 Definition、用法与组合：认知模式、工具目录、预置 Charter、Application | Definition、Reference、Language、Directory、Model |
 
-各个部分各自成文，从部分的名字就能找到各自的文档。依赖方向为：Definition 与 Reference 依赖 Value 和 Bundle；Directory、Model 与 Language 依赖内容交付和 Port 契约；Library 组合 Kernel、Language 与提供者。Kernel 不解释 Directory 或 Model 的领域结构。
+各个部分各自成文，从部分的名字就能找到各自的文档。依赖方向为：Definition 与 Reference 依赖 Value 和 Bundle；Language 依赖内容交付和 Port 契约。Kernel 不解释 Directory 或 Model 的领域结构。
+
+这一层之上还有提供者一侧的领域规格（Directory、Model）与组合（Library），以及具体的 Language。它们各自成仓库，依赖本层公开的契约，本层的文档不解释它们。
 
 ## 分类与关系
 
@@ -56,7 +57,7 @@ P 委托 Individual A，A 使用两套上下文、两个模型，又委托 B。A
 | 想问什么 | 读哪里 |
 |---|---|
 | Croon 是什么、现在做到哪了 | 仓库根的 README.md；进度与下一步见 docs/Plan.md |
-| 系统由哪些部分构成、依赖什么 | 本文的「骨架」；目录与模型服务见 Directory/README.md、Model/README.md |
+| 系统由哪些部分构成、依赖什么 | 本文的「骨架」；上层各部分的文档在各自的仓库 |
 | 一个概念在正文里叫什么，几种名称是什么关系 | 本文的「名词表」与「分类与关系」 |
 | 制度机、零环境特权、测试与生态边界是什么，内核怎样分离 | Kernel/README.md 的「制度机」；实施步骤与验收见 Plan.md 的「内核分离」 |
 | Kernel 保证什么、一样机制该放在哪 | Kernel/README.md 的「保证」「放置」；同一文件里的「前提」写作法要照顾的引擎特性 |
@@ -70,31 +71,26 @@ P 委托 Individual A，A 使用两套上下文、两个模型，又委托 B。A
 | 宿主代码、可信由谁承担 | Kernel/Plugin.md |
 | 跨部分的实现选择与理由 | Kernel/Engineering.md；绑某一部分的在那一部分的「实现」一节 |
 | 某个场景应当跑出什么 Journal | Kernel/Scenarios/；格式、脚手架与扰动见那里的 README.md；内容交付场景使用 Bundle |
-| 一种认知模式怎么写、有哪些做法 | Library/；运行时见 Runtime.md，组织与历史见 Organization.md，成品见 Presets.md |
-| 加一种 Language，或写 Lang0 的程序 | Lang0/；写法见 README.md，首版收什么见 Subset.md，语义、资源与文本见 Evaluator.md，求值器与隔离见 Engineering.md |
 | 证据、先例、借鉴的判据 | Research/；那里的内容待核验，只作线索 |
 | 打算怎么做、下一步做什么 | Plan.md；全文按待定读 |
-| 用户还没成形的想法 | Draft.md；不是设计 |
 
-回归集是 Kernel/README.md 的场景表：删改 Kernel 或 Library 之后重新走一遍。子文件夹的 README.md 只写这一部分讲什么，不再列读法。
+回归集是 Kernel/README.md 的场景表：删改 Kernel 之后重新走一遍。子文件夹的 README.md 只写这一部分讲什么，不再列读法。
 
 跨目录的约定：代码使用的 JSON 形状只在 `crates/*/schema/` 定义，概念的名字只在下面的名词表里。
 
 ## 名词表
 
-一个概念一行，按部分排。「正文」是正文与讨论里专指它时用英文名还是中文名；规则见仓库根 AGENTS 的「用词」。
+一个概念一行，按部分排。「正文」是正文与讨论里专指它时用英文名还是中文名；规则见仓库根 AGENTS 的「用词」。本表只收 Kernel 自己的词；Language、Directory、Model 与 Library 的词在各自仓库的名词表里，这里不重新定义。
 
 | English | 中文 | 正文 | 用法 |
 |---|---|---|---|
 | Cognizer | 主体 | 英 | 系统内的分类见「分类与关系」 |
 | Kernel | 内核 | 英 | |
 | Institution Machine | 制度机 | 中 | Kernel 执行规则、权利与事实所承担的抽象，见 Kernel/README.md |
-| Library | 库 | 英 | |
 | root | 根 | 中 | 只指系统外、造成诞生的一方，记录里写作 outside |
 | Entry | 入口 | 英 | 外部驱动的 Individual；根的入口写 root entry |
 | Value | 值 | 英 | 内容寻址的 JSON、字节与 Bundle |
 | Bundle | 内容包 | 英 | 固定内容与显式依赖的不可变整体，见 Kernel/Value.md |
-| Tree | 树 | 英 | Directory 的目录内容形状，见 Directory/README.md |
 | Definition | 定义 | 英 | |
 | Interface / Implementation | 接口 / 做法 | 英 | Implementation 只指 Definition 的 Implementation |
 | Signature | 签名 | 英 | |
@@ -126,20 +122,7 @@ P 委托 Individual A，A 使用两套上下文、两个模型，又委托 B。A
 | Language | 语言 | 英 | |
 | Ref | 引用值 | 中 | Language 里指向一个 Reference 的值；Ref 与 Reference 太近，所以用中文 |
 | Plugin | 插件 | 英 | |
-| Lang0 | 第一种语言 | 英 | 占位名 |
-| Surface | 表层 | 英 | 模型读写的 Python 写法 |
-| Evaluator | 求值器 | 中 | |
-| Lowering | 降 | 中 | 从 Surface 降到求值契约 |
-| Checkpoint | 检查点 | 英 | 从这里能接着走的 Language 状态 |
-| branch / history branch | 分支 / 历史分支 | 中 | 不带限定的分支只指 Lang0 并发的分支 |
-| Tool | 工具 | 中 | |
-| Middleware | 中间层 | 英 | 同一 body 内的函数包装，见 Library/Runtime.md |
-| Petname | 本地名字 | 英 | 只对自己有意义的短名字 |
 | Custodian | 保管者 | 中 | 见 Kernel/Reference.md 的「持有意味着什么」 |
-| Registrar | 登记者 | 中 | |
-| Application | 应用 | 英 | |
-| W0 | 根的第一个 Agent | 英 | |
-| Directory | 目录 | 英 | 文件与目录的领域格式、导入与物化 |
-| Model | 模型 | 英 | 宿主模型服务的 Port 形状 |
+| Registrar | 登记者 | 中 | 同上 |
 
 参考：Kernel/README.md（制度机、根、待定）；Kernel/Definition/README.md（Cognition 与 Charter）；Kernel/Definition/Cognition.md（求值器在系统外）；Kernel/Instance.md（委托）。

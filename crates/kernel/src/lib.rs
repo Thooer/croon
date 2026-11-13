@@ -8,6 +8,8 @@ pub mod index;
 pub mod journal;
 pub mod kernel;
 pub mod schema;
+/// 内容存储的形状与实现住 `croon-port`；这里重导出，便于在 Kernel 之上写装的代码仍按 `kernel::store` 取用。
+pub use croon_port::store;
 
 #[cfg(test)]
 pub(crate) mod testutil {
