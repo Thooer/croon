@@ -114,7 +114,7 @@ impl IdGen {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::value::ValueId;
+    use croon_eval::value::ValueId;
 
     fn gen_() -> IdGen {
         IdGen::new(b"test-system")

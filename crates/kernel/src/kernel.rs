@@ -19,9 +19,9 @@ use crate::index::{
     Index, Mint, Node, Provider, View, failure, kernel_ports, kernel_spec, same_spec, what,
 };
 use crate::journal::{Journal, JournalError, NewRecord};
-use crate::schema::{json_eq, validate};
-use crate::store::{Bundle, Content, ContentStore, Scope, StoreError};
-use crate::value::{ValueError, ValueId};
+use croon_eval::schema::{json_eq, validate};
+use croon_eval::value::{ValueError, ValueId};
+use croon_port::{Bundle, Content, ContentStore, Scope, StoreError};
 
 mod content;
 mod execution;
@@ -571,7 +571,7 @@ impl Kernel {
             .view()
             .definition_bundle(definition_bundle)
             .ok_or_else(|| KernelError::Refused("missing Definition".into()))?;
-        crate::definition::check_shape(&definition)
+        croon_eval::definition::check_shape(&definition)
             .map_err(|e| KernelError::Refused(format!("Definition: {e:?}")))?;
         if definition["evaluator"] != "external" {
             return Err(KernelError::Refused(
@@ -613,7 +613,7 @@ impl Kernel {
                 let source = &binding["sources"][port];
                 let actual = &source["spec"];
                 let probe = json!({"evaluator":"external","interface":{"description":"","signature":{"in":{},"out":{}},"provides":{},"requires":{"source":actual}}});
-                crate::definition::check_shape(&probe)
+                croon_eval::definition::check_shape(&probe)
                     .map_err(|e| KernelError::Refused(format!("source spec: {e:?}")))?;
                 if let Some(op) = source["kernel"].as_str() {
                     if !same_spec(actual, "", kernel_spec(op).0, "") {
@@ -1665,7 +1665,7 @@ enum Offered {
     Diverged(String),
 }
 
-fn host_error(e: crate::host::HostError) -> KernelError {
+fn host_error(e: croon_port::HostError) -> KernelError {
     KernelError::Host(e.to_string())
 }
 fn canonical_dependencies(v: &Json) -> bool {

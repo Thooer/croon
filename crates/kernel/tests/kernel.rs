@@ -21,7 +21,7 @@ fn open(tag: &str) -> (Dir, Kernel) {
     let _ = std::fs::remove_dir_all(&dir.0);
     let config = Config {
         languages: Vec::new(),
-        budgets: kernel::store::Budgets {
+        budgets: croon_port::Budgets {
             nodes: 10000,
             read_bytes: 10_000_000,
             write_bytes: 10_000_000,

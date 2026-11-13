@@ -11,8 +11,8 @@ use std::sync::OnceLock;
 
 use serde_json::{Value as Json, json};
 
-use crate::store::{ContentStore, Scope};
-use crate::value::ValueId;
+use croon_eval::value::ValueId;
+use croon_port::{ContentStore, Scope};
 
 /// 一条记录的位置：(Journal, 序号)。
 pub type Pos = (String, u64);
@@ -341,9 +341,9 @@ pub fn same_spec(a_root: &Json, a_ptr: &str, b_root: &Json, b_ptr: &str) -> bool
         return false;
     };
     if !has_ref(a) && !has_ref(b) {
-        return crate::schema::json_eq(&strip(a), &strip(b));
+        return croon_eval::schema::json_eq(&strip(a), &strip(b));
     }
-    a_ptr == b_ptr && crate::schema::json_eq(&strip(a_root), &strip(b_root))
+    a_ptr == b_ptr && croon_eval::schema::json_eq(&strip(a_root), &strip(b_root))
 }
 
 fn esc(name: &str) -> String {
@@ -911,11 +911,11 @@ impl View<'_> {
         &self,
         instance: &str,
         consumed: Option<&[String]>,
-    ) -> Result<Scope, crate::host::HostError> {
+    ) -> Result<Scope, croon_port::HostError> {
         let j = self
             .ix
             .journal(instance)
-            .ok_or_else(|| crate::host::HostError("unknown Instance".into()))?;
+            .ok_or_else(|| croon_port::HostError("unknown Instance".into()))?;
         let mut scope = self.record_scope(instance, 0);
         let seqs: Vec<u64> = match consumed {
             None => (1..j.records.len() as u64).collect(),
@@ -923,7 +923,7 @@ impl View<'_> {
                 keys.iter()
                     .map(|k| {
                         j.keys.get(k).copied().ok_or_else(|| {
-                            crate::host::HostError(format!("unknown consumed key {k}"))
+                            croon_port::HostError(format!("unknown consumed key {k}"))
                         })
                     })
                     .collect::<Result<_, _>>()?

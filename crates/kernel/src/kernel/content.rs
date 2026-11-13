@@ -26,7 +26,7 @@ impl Kernel {
                     return Ok(Outcome::rejected("denied", "part outside delivery"));
                 };
                 bytes.extend(part);
-                crate::value::check_bytes(&bytes)?;
+                croon_eval::value::check_bytes(&bytes)?;
             }
             content.put_bytes(&bytes).map_err(host_error)?
         };
@@ -54,7 +54,7 @@ impl Kernel {
         let Some(d) = content.json(&bundle.content).map_err(host_error)? else {
             return Ok(Outcome::fail("use", "Definition is not JSON"));
         };
-        if let Err(v) = crate::definition::check_shape(&d) {
+        if let Err(v) = croon_eval::definition::check_shape(&d) {
             return Ok(Outcome::fail("use", format!("{v:?}")));
         }
         if d.get("evaluator").is_some() {

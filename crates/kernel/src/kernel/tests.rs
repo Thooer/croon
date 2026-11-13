@@ -3,8 +3,8 @@
 
 use super::*;
 use crate::host::HostError;
-use crate::store::Budgets;
 use crate::testutil::TempDir;
+use croon_port::Budgets;
 
 fn config() -> Config {
     Config {

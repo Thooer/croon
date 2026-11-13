@@ -52,6 +52,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "croon-port"
+version = "0.0.0"
+dependencies = [
+ "croon-eval",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "croon-tree"
+version = "0.0.0"
+dependencies = [
+ "croon-eval",
+ "serde_json",
+]
+
+[[package]]
 name = "crypto-common"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -118,6 +135,7 @@ name = "kernel"
 version = "0.0.0"
 dependencies = [
  "croon-eval",
+ "croon-port",
  "rusqlite",
  "serde_json",
  "sha2",
@@ -221,6 +239,7 @@ name = "scenarios"
 version = "0.0.0"
 dependencies = [
  "croon-eval",
+ "croon-port",
  "kernel",
  "serde_json",
 ]

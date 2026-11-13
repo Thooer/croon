@@ -2,7 +2,7 @@
 //! 参考：docs/Kernel/Reference.md（求值中的读取位置）。
 
 use super::*;
-use crate::store::Budget;
+use croon_port::store::Budget;
 use std::cell::RefCell;
 
 pub(super) struct Reader<'a> {

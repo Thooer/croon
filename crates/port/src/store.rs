@@ -4,7 +4,7 @@
 //! 按内容寻址，写入是幂等的：同一个 ID 写几次都一样。Value 先落盘，引用它的记录之后才提交，
 //! 所以没有记录引用的 Value 只是可以回收的垃圾，不影响正确性。
 
-use crate::host::HostError;
+use croon_eval::host::HostError;
 use std::cell::{Cell, RefCell};
 use std::collections::BTreeSet;
 use std::fs;
@@ -15,7 +15,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use serde_json::Value as Json;
 
-use crate::value::{self, ValueError, ValueId};
+use croon_eval::value::{self, ValueError, ValueId};
 
 #[derive(Debug, thiserror::Error)]
 pub enum StoreError {
@@ -141,7 +141,7 @@ pub struct Budgets {
 pub use croon_eval::store::Bundle;
 
 #[derive(Default, Clone)]
-pub(crate) struct Scope {
+pub struct Scope {
     pub values: BTreeSet<String>,
     pub bundles: BTreeSet<String>,
 }
@@ -158,13 +158,13 @@ impl ContentStore {
     }
 }
 
-pub(crate) struct Budget {
+pub struct Budget {
     nodes: Cell<usize>,
     reads: Cell<usize>,
     writes: Cell<usize>,
 }
 impl Budget {
-    pub(crate) fn new(limits: Budgets) -> Rc<Self> {
+    pub fn new(limits: Budgets) -> Rc<Self> {
         Rc::new(Self {
             nodes: Cell::new(limits.nodes),
             reads: Cell::new(limits.read_bytes),
@@ -238,14 +238,10 @@ impl Content {
             budgets,
         )
     }
-    pub(crate) fn new(
-        store: Rc<ContentStore>,
-        scope: Scope,
-        budgets: Budgets,
-    ) -> Result<Self, HostError> {
+    pub fn new(store: Rc<ContentStore>, scope: Scope, budgets: Budgets) -> Result<Self, HostError> {
         Self::with_budget(store, scope, Budget::new(budgets))
     }
-    pub(crate) fn with_budget(
+    pub fn with_budget(
         store: Rc<ContentStore>,
         scope: Scope,
         budget: Rc<Budget>,
@@ -365,8 +361,7 @@ impl Content {
         self.scope.borrow_mut().bundles.insert(id.clone());
         Ok(id)
     }
-    #[cfg(feature = "runtime")]
-    pub(crate) fn grants(&self, dependencies: &Json) -> bool {
+    pub fn grants(&self, dependencies: &Json) -> bool {
         dependencies.as_array().is_some_and(|a| {
             a.iter().all(|d| {
                 d.as_str()
@@ -379,7 +374,21 @@ impl Content {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::testutil::TempDir;
+    struct TempDir(std::path::PathBuf);
+    impl TempDir {
+        fn new(tag: &str) -> Self {
+            let dir =
+                std::env::temp_dir().join(format!("croon-port-test-{tag}-{}", std::process::id()));
+            let _ = std::fs::remove_dir_all(&dir);
+            std::fs::create_dir_all(&dir).unwrap();
+            Self(dir)
+        }
+    }
+    impl Drop for TempDir {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
     use serde_json::json;
 
     fn store(tag: &str) -> (TempDir, ContentStore) {

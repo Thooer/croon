@@ -4,15 +4,10 @@ pub mod blocks;
 pub mod definition;
 pub mod host;
 pub mod ids;
-#[cfg(feature = "runtime")]
 pub mod index;
-#[cfg(feature = "runtime")]
 pub mod journal;
-#[cfg(feature = "runtime")]
 pub mod kernel;
 pub mod schema;
-pub mod store;
-pub mod value;
 
 #[cfg(test)]
 pub(crate) mod testutil {

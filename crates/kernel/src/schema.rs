@@ -3,12 +3,10 @@
 //!
 //! 实现在 `croon-eval`；本文件补齐 Kernel 自己那几份 Schema 的自检。
 
-pub use croon_eval::schema::*;
-
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::blocks;
+    use croon_eval::schema::{Violation, check_schema, validate};
     use serde_json::{Value as Json, json};
 
     fn ok(schema: Json, value: Json) {

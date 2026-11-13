@@ -1,6 +1,7 @@
 //! Bundle delivery, complete Definition identity, and durable provider recovery.
 //! 参考：docs/Kernel/Reference.md（能读的 ID）；docs/Kernel/Instance.md（执行）。
 
+use croon_port::{Budgets, Content};
 use kernel::{
     host::{
         Call, Channel, CheckError, Config, Execution, Fault, HostDone, HostError, Language, Port,
@@ -8,7 +9,6 @@ use kernel::{
     },
     index::kernel_spec,
     kernel::{Conn, Kernel},
-    store::{Budgets, Content},
 };
 use serde_json::{Value as Json, json};
 use std::{
@@ -411,7 +411,7 @@ fn missing_original_provider_blocks_reopen_until_its_attempt_is_retired() {
 #[test]
 fn content_budget_and_shape_errors_are_distinct_from_unreadable_content() {
     let dir = Dir::new("content");
-    let store = Rc::new(kernel::store::ContentStore::open(&dir.0).unwrap());
+    let store = Rc::new(croon_port::ContentStore::open(&dir.0).unwrap());
     let content = Content::from_inputs(store.clone(), &[], budgets()).unwrap();
     let value = content.put_bytes(b"abc").unwrap();
     let root = content.pack(&value, &[]).unwrap();

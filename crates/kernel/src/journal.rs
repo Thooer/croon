@@ -15,8 +15,8 @@ use std::path::Path;
 use rusqlite::{Connection, OptionalExtension, Transaction, TransactionBehavior, params};
 use serde_json::{Value as Json, json};
 
-use crate::schema::{Violation, validate};
-use crate::value::{self, ValueError};
+use croon_eval::schema::{Violation, validate};
+use croon_eval::value::{self, ValueError};
 
 #[derive(Debug, thiserror::Error)]
 pub enum JournalError {
@@ -588,7 +588,7 @@ fn find_key_of(conn: &Connection, instance: &str, key: &str) -> Result<Option<Js
 mod tests {
     use super::*;
     use crate::testutil::TempDir;
-    use crate::value::ValueId;
+    use croon_eval::value::ValueId;
 
     fn id() -> String {
         ValueId::of_bytes(b"x").to_string()

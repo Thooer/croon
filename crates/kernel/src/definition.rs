@@ -3,13 +3,11 @@
 //!
 //! 形状部分在 `croon-eval`；这里补齐要问 Kernel 的那几项，并保留 Kernel 自己那几份 Schema 的自检。
 
-pub use croon_eval::definition::check_shape;
-
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::blocks;
-    use crate::schema::Violation;
+    use croon_eval::definition::check_shape;
+    use croon_eval::schema::Violation;
     use serde_json::{Value as Json, json};
 
     fn port_min() -> Json {

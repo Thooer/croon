@@ -3,7 +3,9 @@ resolver = "3"
 members = [
     "crates/eval",
     "crates/kernel",
+    "crates/port",
     "crates/scenarios",
+    "crates/tree",
 ]
 exclude = []
 
