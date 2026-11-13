@@ -111,10 +111,10 @@ record 中的 delivery 把 value 写成内容 ID，其他信息形状与会话�
 
 ## 四条不变量
 
-1. 同一个 key 只有一条结果记录，交出、取、失败和被拒都占用它。[test:croon/crates/kernel/src/journal.rs:a_key_has_one_record_whether_it_is_a_send_or_a_receive]
-2. 当前代际求值过的 Atom 都有记录；未有结果的 Atom 没有 seq。旧代际的请求被拒，不算这个 Instance 的一步。[test:croon/crates/kernel/tests/kernel.rs:a_refused_send_and_a_timed_out_receive_are_recorded] [test:croon/crates/kernel/tests/kernel.rs:an_old_session_cannot_write_and_leaves_nothing_behind]
-3. 事件的造成记录和全部结果在同一事务；root entry 的诞生只由 outside 造成。[test:croon/crates/scenarios/tests/expected.rs:events_line_up]
-4. 一个 Instance 影响另一个，当且仅当它的一步在对方 Journal 里造成记录。Look、取和向 Notify 登记本身不改目标。[test:croon/crates/kernel/tests/kernel.rs:reading_a_journal_leaves_no_record_and_gives_no_handles]
+1. 同一个 key 只有一条结果记录，交出、取、失败和被拒都占用它。[test:crates/kernel/src/journal.rs:a_key_has_one_record_whether_it_is_a_send_or_a_receive]
+2. 当前代际求值过的 Atom 都有记录；未有结果的 Atom 没有 seq。旧代际的请求被拒，不算这个 Instance 的一步。[test:crates/kernel/tests/kernel.rs:a_refused_send_and_a_timed_out_receive_are_recorded] [test:crates/kernel/tests/kernel.rs:an_old_session_cannot_write_and_leaves_nothing_behind]
+3. 事件的造成记录和全部结果在同一事务；root entry 的诞生只由 outside 造成。[test:crates/scenarios/tests/expected.rs:events_line_up]
+4. 一个 Instance 影响另一个，当且仅当它的一步在对方 Journal 里造成记录。Look、取和向 Notify 登记本身不改目标。[test:crates/kernel/tests/kernel.rs:reading_a_journal_leaves_no_record_and_gives_no_handles]
 
 ## 恢复就是重放
 

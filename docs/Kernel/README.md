@@ -134,7 +134,7 @@ Cognizer 的运作方式都由骨架组合而成。这张表用功能检验 Kern
 | W0 让监督者知道子 Agent 什么时候结束，但不让它读 Journal | 登记时附带监督者的 Port，它只收到结束状态，拿不到 Look；它的 Port 不收结束状态的，登记当场以 type 失败 | 独立检验、只读观察 |
 | 别人冒充子 Agent 的结束交到 W0 的 done | via 不是登记时的那份，sender 也不是子 Agent，按 via 取取不到 | 委托 |
 | H 经转交者 F 交给当班的 W，附带回话途径，W 直接回给 H | 来路沿派生链报到 H 自己交出的那一份，H 按回执里的 Handle 取得到；看不到 F 与 W 的 Handle | 交接 |
-| 根经一个 Entry 交出两类意见，审批者暂停时第二项到达，中途重启 | 审批者没有 Required port，也不收附带；分别取两个意见，按固定规则给出决议，Notify 交回结果。预期见 Scenarios/Approval.md，独立审批求值器与共用脚手架逐条比对[test:croon/crates/scenarios/tests/approval.rs:approval_uses_an_independent_evaluator_and_recovers_while_paused]，逐提交点恢复相同[test:croon/crates/scenarios/tests/approval.rs:approval_recovers_at_every_commit_with_the_same_decision]；单 Entry 检验意见的处理，多参与者的认证留给系统边界 | 单次调用、固定工作流、打断、只读观察、委托 |
+| 根经一个 Entry 交出两类意见，审批者暂停时第二项到达，中途重启 | 审批者没有 Required port，也不收附带；分别取两个意见，按固定规则给出决议，Notify 交回结果。预期见 Scenarios/Approval.md，独立审批求值器与共用脚手架逐条比对[test:crates/scenarios/tests/approval.rs:approval_uses_an_independent_evaluator_and_recovers_while_paused]，逐提交点恢复相同[test:crates/scenarios/tests/approval.rs:approval_recovers_at_every_commit_with_the_same_decision]；单 Entry 检验意见的处理，多参与者的认证留给系统边界 | 单次调用、固定工作流、打断、只读观察、委托 |
 | 根让 W0 改仓库里的一处代码，收到结果写回磁盘；中途客户端断线 | root entry 交付仓库 Bundle，接上模型、文件执行、构造和实例化 Port；W0 显式携带快照，断线重连用原键重报；结果 Bundle 由根在系统外写回磁盘 | 委托 |
 | W0 把一处修改交办给子 Agent S，等它结束，审过交回的 Bundle 再采用 | S 的完整 Definition Bundle 与快照由 W0 交付；S 的文件执行从显式输入产生候选 Bundle；W0 向 Notify 登记，按 via 取结束结果，比较基准后明确采用或合并；两份 Definition 共享同一 Library 依赖 | 委托、作用于外界 |
 

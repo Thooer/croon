@@ -7,7 +7,7 @@
 //! - `link` 不引入依赖，也不跟随；跟随是使用方的决定，不是形状的规则。
 //! - 校验只读 JSON 与 [`Bundle`] 的形状，不碰文件系统。路径穿越、符号链接、可执行位怎样变成 Tree，是使用方的事。
 //!
-//! 形状的定义与理由见 `docs/Tree.md`。
+//! 义务以上面四条为准，docs 不复述。为什么依赖必须恰好覆盖、为什么 link 不引入依赖，见 `docs/Tree.md`。
 
 use croon_eval::host::HostError;
 use croon_eval::store::Bundle;

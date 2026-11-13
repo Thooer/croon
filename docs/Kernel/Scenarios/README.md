@@ -25,14 +25,16 @@
 
 ## 脚手架
 
-一个简单的脚手架拿一个场景驱动真的 Kernel，在共用的测试 crate crates/scenarios/ 里，Kernel 的场景与 Language 的场景都用它：[test:croon/crates/scenarios/tests/scaffold.rs:scenarios_run_on_the_real_kernel]
+一个简单的脚手架拿一个场景驱动真的 Kernel，在共用的测试 crate crates/scenarios/ 里，Kernel 的场景与 Language 的场景都用它：[test:crates/scenarios/tests/scaffold.rs:scenarios_run_on_the_real_kernel]
 
 - **root entry**：脚手架是它的客户端。按它的诞生创建它：完整 Definition Bundle、输入交付和 binding 取自 `values`；self 里的 Required port 接到自己。之后按它的 Journal 报出 Atom。
 - **假的 Language**：一个 Instance 诞生时，按造成它诞生的事件找到它在 `journals` 里的那本，依次报出其中自己的步：交出给出 key、to、delivery 与附带的目标，取给出 key 与 filter；步走完，报出 `pending`，没有 pending 就以 end 记录里的结果报 done。
-- **真的 Language**：Definition 的 language 不是 fake@1 的、求值器在宿主的 Instance。Atom 由它报出，脚手架管不着；先后改由假的 llm 与 exec 何时给出结果来定。交给宿主源的按绑定目标识别；场景中的模型与 exec 由上述测试 provider spec 解释。一次结果只在它的记录能走、并且同一本 Journal 里紧接着的、由 Kernel 当场完成的那几条（交给 Kernel 自己执行的 Port 或 Instance 的交出、结束）也都能走时才给出，到下一个取、下一个交给 llm、exec 的交出或别人造成的记录为止；能不能走按下面的「先后」判。当场完成的那几条，先后由 Language 定，脚手架控制不了：只靠控制报出才得到的先后，如 Quick 里子 Agent 先结束，用真的 Language 复现不出。[test:croon/crates/scenarios/tests/scaffold.rs:a_real_language_reports_its_own_atoms_in_any_compatible_order]
+- **真的 Language**：Definition 的 language 不是 fake@1 的、求值器在宿主的 Instance。Atom 由它报出，脚手架管不着；先后改由假的 llm 与 exec 何时给出结果来定。交给宿主源的按绑定目标识别；场景中的模型与 exec 由上述测试 provider spec 解释。一次结果只在它的记录能走、并且同一本 Journal 里紧接着的、由 Kernel 当场完成的那几条（交给 Kernel 自己执行的 Port 或 Instance 的交出、结束）也都能走时才给出，到下一个取、下一个交给 llm、exec 的交出或别人造成的记录为止；能不能走按下面的「先后」判。当场完成的那几条，先后由 Language 定，脚手架控制不了：只靠控制报出才得到的先后，如 Quick 里子 Agent 先结束，用真的 Language 复现不出。[test:crates/scenarios/tests/scaffold.rs:a_real_language_reports_its_own_atoms_in_any_compatible_order]
 - **假的只接在三处**：Language 的插口，fake@1 经 definition.eval 往来；模型的提供者；exec 的容器。其余都是真的 Kernel：内容库、记录库、索引、决定与提交，见 ../Journal.md 的「实现」。root entry 的客户端在进程内直接调 Kernel，不经 socket。
 - **假的宿主 Port**：按来源 Handle 装配，接受一次给一个独立执行对象，按交出记录里的 result 收取；隔离执行的结果显式交付产物 Bundle。pending 里的 Atom 不回。
-- **先后**：一本 Journal 里按序号；跨 Journal 的，事件造成的记录排在造成它的那一步之后，再加上 `order`。脚手架按任何一个与这个偏序相容的全序推进，得到的 Journal 都应当相同。[test:croon/crates/scenarios/tests/scaffold.rs:any_compatible_order_gives_the_same_journals]
+- **先后**：一本 Journal 里按序号；跨 Journal 的，事件造成的记录排在造成它的那一步之后，再加上 `order`。脚手架按任何一个与这个偏序相容的全序推进，得到的 Journal 都应当相同。[test:crates/scenarios/tests/scaffold.rs:any_compatible_order_gives_the_same_journals]
+
+  测试不可能枚举全序，所以只跑 seed 1 到 8，每场景各一次；名字里的「any」指每次得到的结果都得一样，不是指覆盖了全部。16 次 Index 重建同理，只随机交错不同 Journal 的记录，不重排一本 Journal 内部。这两处都靠上面的偏序证明覆盖，而不是靠枚举。
 - **预存**：需要排除「ID 不存在」干扰时，Setup.preload 在 root entry 创建前导入指定内容与 Bundle，只存内容，不授予 Instance 取得资格。
 
 ```json scenario.engine
