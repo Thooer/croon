@@ -11,8 +11,6 @@ pub static BLOCKS: &[Block] = &[
     Block { name: "directory.exec", lang: "json", text: include_str!("../schema/directory.exec.json"), file: "crates/scenarios/schema/directory.exec.json", line: 0 },
     Block { name: "instance.id", lang: "json", text: include_str!("../schema/instance.id.json"), file: "crates/scenarios/schema/instance.id.json", line: 0 },
     Block { name: "instance.record", lang: "json", text: include_str!("../schema/instance.record.json"), file: "crates/scenarios/schema/instance.record.json", line: 0 },
-    #[cfg(feature = "lang0")]
-    Block { name: "lang0.scenario.delegate", lang: "json", text: include_str!("../schema/lang0.scenario.delegate.json"), file: "crates/scenarios/schema/lang0.scenario.delegate.json", line: 0 },
     Block { name: "model.generate", lang: "json", text: include_str!("../schema/model.generate.json"), file: "crates/scenarios/schema/model.generate.json", line: 0 },
     Block { name: "reference.binding", lang: "json", text: include_str!("../schema/reference.binding.json"), file: "crates/scenarios/schema/reference.binding.json", line: 0 },
     Block { name: "reference.kernel", lang: "json", text: include_str!("../schema/reference.kernel.json"), file: "crates/scenarios/schema/reference.kernel.json", line: 0 },

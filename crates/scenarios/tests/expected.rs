@@ -4,14 +4,8 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-#[cfg(feature = "lang0")]
-use kernel::host::Language;
 use kernel::schema::{json_eq, validate};
-#[cfg(feature = "lang0")]
-use scenarios::bind::Bind;
 use scenarios::blocks;
-#[cfg(feature = "lang0")]
-use scenarios::expand;
 use scenarios::scenario::{self, values};
 use serde_json::{Value as Json, json};
 
@@ -417,32 +411,3 @@ fn pending_atoms_fit_definition_eval() {
     }
 }
 
-/// Language 的场景里，写着 lang0@1 的 Definition 展开之后通过它自己的构造检查。
-#[cfg(feature = "lang0")]
-#[test]
-fn lang0_definitions_in_the_scenarios_pass_the_construction_check() {
-    let raw = values(&scenarios());
-    let (expanded, made) = expand::values(&raw);
-    let mut bind = Bind::new(expanded.clone());
-    bind.made.extend(made.json.clone());
-    bind.bytes.extend(made.bytes.clone());
-    let mut read = made.clone();
-    let mut checked = 0;
-    for (name, content) in &expanded {
-        if content["$bundle"].get("language") != Some(&json!("lang0@1")) {
-            continue;
-        }
-        let definition = bind.definition(name);
-        read.json.extend(bind.made.clone());
-        read.bytes.extend(bind.bytes.clone());
-        kernel::definition::check_shape(&definition).unwrap_or_else(|v| panic!("{name}：{v:?}"));
-        lang0::Lang0
-            .check(&definition, &read)
-            .unwrap_or_else(|e| panic!("{name}：{e}"));
-        checked += 1;
-    }
-    assert!(
-        checked >= 2,
-        "Delegate 里应当有 W0 与 S，实际查了 {checked} 份"
-    );
-}

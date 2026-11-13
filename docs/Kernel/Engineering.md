@@ -11,7 +11,7 @@
 | 部分 | 选择 | 理由 |
 |---|---|---|
 | Kernel 的宿主语言 | Rust | Kernel 的数据几乎全是带标记的联合（记录、Atom、结果、目标、来源、Control 的操作），以后还会加种类；enum 加穷尽匹配，加一种时编译器指出所有要改的地方。Lang0 的求值器经 definition.eval 往来，宿主语言另选，不影响这一选择 |
-| 基础库 | tokio、serde_json、sha2、thiserror、tracing 与 tracing-subscriber、pulldown-cmark、toml、tiktoken-rs、rusqlite；版本见 Cargo.lock | 各管一样封闭的工作：异步运行时、JSON、内容寻址的哈希、错误类型、日志、spec crate 取出 block 与解析 tracked.toml、数正文的 token（词表内嵌：提交钩子离线也要得出同一个数）、本地记录库（SQLite 的源码编进来，版本由 Cargo.lock 钉死，不依赖系统的库） |
+| 基础库 | tokio、serde_json、sha2、thiserror、tracing 与 tracing-subscriber、rusqlite；版本见 Cargo.lock | 各管一样封闭的工作：异步运行时、JSON、内容寻址的哈希、错误类型、日志、本地记录库（SQLite 的源码编进来，版本由 Cargo.lock 钉死，不依赖系统的库） |
 | 发布版本 | SemVer，现在是 0.x.y | 当前直接修订契约、数据和测试，不保留开发期旧格式解释。兼容以功能可组合检验；运行中的不可变身份、记录和重放仍严格成立 |
 | 校验 | 自己写，只认 value.schema 的子集 | 报错要带路径、说出违反了哪条规则，并用模型写的写法说话（如 Lang0 的 TypedDict、Literal）；通用库的报错还要再翻译一层，工作量不小于一个十个关键字的校验器。先用 value.schema 校验每一份 Schema，未列出的关键字就被拒；再校验值 |
 | 生成器 | 先只做取出：每个带名字的 block 平铺成名字到文本的表，不区分 Schema、注册表与数据，怎么用由 Rust 代码决定；取出时展开 `$block`，表里是展开后的文本，规则见仓库根 AGENTS 的「取用」。类型的生成等 Kernel 需要时再写，自己写，只认文档里用到的几种 anyOf：按键区分的联合、带字面量判别字段的联合、按 JSON 类型区分的联合（如 `boolean \| Schema`）、`T \| null`；别的写法报错，指回文件与 block 名字 | 取出不解读，所以 block 不用标记自己是哪一种，形状仍只在文档里一份。展开在取出时做，Kernel 的校验器与交给 LLM 的 Schema 看到的都是自身完整的一份，value.schema 不加关键字。typify 0.8 损失两处：单值的 enum 变成 bool，definition.outcome 的 ok 分不开 true 与 false；跨 block 的形状变成任意 JSON。只认几种写法，规则就是结构 |
@@ -38,7 +38,7 @@
 
 接口的 JSON 形状在各部分取用；Rust trait 的内部组织只在代码。上面列的是跨模块保证，不规定方法参数的第二份形状。
 
-规格也按消费方取用：Kernel 构建只读核心规格，Language 与装配各自取自己的文档和所需依赖；场景的集成装配按需加入具体 Language 与 Library。spec 共用取出、展开与生成过程，生成表只在各自的 OUT_DIR。移动取用位置不改变展开后的内容与 ID；全库的名字唯一、参考与测试标记仍由仓库检查守住。
+规格也按消费方取用：Kernel 构建只读核心规格，场景的集成装配按需加入具体 Language 与 Library。各 crate 直接从自己的 `schema/` 文件读取形状，移动文档不改变代码使用的规格。
 
 ## 待定
 

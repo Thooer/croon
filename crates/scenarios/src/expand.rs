@@ -82,10 +82,14 @@ pub fn root() -> PathBuf {
         .canonicalize()
         .expect("CARGO_MANIFEST_DIR 必须存在");
     loop {
-        if current.join("tracked.toml").is_file() {
+        let manifest = current.join("Cargo.toml");
+        if std::fs::read_to_string(&manifest)
+            .ok()
+            .is_some_and(|text| text.contains("[workspace]"))
+        {
             return current;
         }
-        assert!(current.pop(), "仓库根要存在（向上找 tracked.toml）");
+        assert!(current.pop(), "仓库根要存在 workspace Cargo.toml");
     }
 }
 
@@ -97,7 +101,6 @@ pub fn expand(value: &Json, made: &mut Made) -> Json {
         Json::Object(m) if m.len() == 1 && m.contains_key("$tree") => {
             json!(tree(&root().join(m["$tree"].as_str().unwrap()), made))
         }
-        Json::Object(m) if m.len() == 1 && m.contains_key("$library") => json!(library(made)),
         Json::Object(m) if m.len() == 1 && m.contains_key("$bytes") => {
             let content = made.put_bytes(m["$bytes"].as_str().unwrap().as_bytes().to_vec());
             json!(made.pack(content, vec![]))
@@ -149,32 +152,6 @@ fn executable(_: &Path) -> bool {
     false
 }
 
-#[cfg(feature = "lang0")]
-fn library(made: &mut Made) -> String {
-    let id = tree(&root().join("croon-app/library"), made);
-    let bundle = made.json[&id].clone();
-    let mut content = made.json[bundle["content"].as_str().unwrap()].clone();
-    let mut deps: Vec<String> = bundle["dependencies"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|v| v.as_str().unwrap().into())
-        .collect();
-    for (name, source) in generated_modules() {
-        assert!(content.get(name).is_none());
-        let bytes = made.put_bytes(source.into_bytes());
-        let file = made.pack(bytes, vec![]);
-        content[name] = json!({"file":file,"x":false});
-        deps.push(file);
-    }
-    let raw = made.put_json(content);
-    made.pack(raw, deps)
-}
-#[cfg(not(feature = "lang0"))]
-fn library(_: &mut Made) -> String {
-    panic!("$library requires lang0")
-}
-
 pub fn values(raw: &BTreeMap<String, Json>) -> (BTreeMap<String, Json>, Made) {
     let mut made = Made::default();
     let values = raw
@@ -182,7 +159,7 @@ pub fn values(raw: &BTreeMap<String, Json>) -> (BTreeMap<String, Json>, Made) {
         .map(|(k, v)| {
             let expanded = expand(v, &mut made);
             let value = if v.as_object().is_some_and(|m| {
-                m.contains_key("$bytes") || m.contains_key("$tree") || m.contains_key("$library")
+                m.contains_key("$bytes") || m.contains_key("$tree")
             }) {
                 json!({"$alias":expanded})
             } else {
@@ -194,57 +171,3 @@ pub fn values(raw: &BTreeMap<String, Json>) -> (BTreeMap<String, Json>, Made) {
     (values, made)
 }
 
-/// Library 目录里由 spec 生成的三份模块；形状由本 crate 的 block 表给出，写法由 lang0 渲染。
-#[cfg(feature = "lang0")]
-pub fn generated_modules() -> [(&'static str, String); 3] {
-    use lang0::library::{Decl, module};
-    const PORTS: &[(&str, &str)] = &[
-        ("pack", "Pack"),
-        ("construct", "Construct"),
-        ("instantiate", "Instantiate"),
-        ("look", "Look"),
-        ("notify", "Notify"),
-        ("correct", "Correct"),
-        ("revoke", "Revoke"),
-    ];
-    let kernel = crate::blocks::json("reference.kernel");
-    let mut decls: Vec<Decl> = PORTS
-        .iter()
-        .map(|(port, name)| Decl {
-            name,
-            spec: &kernel[*port],
-            schema: false,
-        })
-        .collect();
-    let outcome = crate::blocks::json("definition.outcome");
-    decls.push(Decl {
-        name: "Outcome",
-        spec: &outcome,
-        schema: true,
-    });
-    let kernel_py = module(
-        "\"\"\"Kernel 各 Port 的 Port spec 与 Outcome。由构建生成，不要手改。\"\"\"\nfrom croon import Port, Schema\n\n",
-        &decls,
-    );
-    let model_py = module(
-        "from croon import Port\n",
-        &[Decl {
-            name: "Generate",
-            spec: &crate::blocks::json("model.generate"),
-            schema: false,
-        }],
-    );
-    let directory_py = module(
-        "from croon import Port\n",
-        &[Decl {
-            name: "Exec",
-            spec: &crate::blocks::json("directory.exec"),
-            schema: false,
-        }],
-    );
-    [
-        ("kernel.py", kernel_py),
-        ("model.py", model_py),
-        ("directory.py", directory_py),
-    ]
-}

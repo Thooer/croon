@@ -24,5 +24,3 @@ thiserror = { workspace = true }
 tokio = { workspace = true, optional = true }
 tracing = { workspace = true, optional = true }
 tracing-subscriber = { workspace = true, features = ["fmt"], optional = true }
-
-# build.rs 用它取出文档里带名字的 block。

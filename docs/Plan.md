@@ -29,7 +29,7 @@
 生命周期的 0。首刀与第二刀已完成，运行闭环还差真实的外部执行。已完成：
 
 - **首刀**：旧的 Tree/记录形状已删除；Approval、Binding 与 Kernel Bundle 测试验证新的交付、构造事实、读取范围与恢复边界。场景脚手架的完整迁移仍在本次提交验收中。
-- **第二刀**：Lang0 顺序求值、CPython 差分、WASM 桥与新的显式交付场景通过；Delegate 在兼容顺序、提交点和每个 provider Atom 在途崩溃下 Journal 相同[test:croon/crates/scenarios/tests/lang0.rs:delegate_runs_with_real_lang0] [test:croon/crates/scenarios/tests/lang0.rs:delegate_has_the_same_journals_in_compatible_orders] [test:croon/crates/scenarios/tests/lang0.rs:delegate_recovers_at_every_commit] [test:croon/crates/scenarios/tests/lang0.rs:delegate_recovers_with_every_provider_atom_in_flight]。
+- **第二刀**：Lang0 顺序求值、CPython 差分、WASM 桥与新的显式交付场景通过；Delegate 在兼容顺序、提交点和每个 provider Atom 在途崩溃下 Journal 相同。Lang0 与 App 的集成验证在对应仓库维护。
 - **CPython 差分**（5a29d4e）：子集程序的结束值与 Atom 先后通过 CPython 3.12 对照[test:croon-lang0/crates/lang0/src/eval/tests.rs:cpython_differential]，已列出的差异单独检查[test:croon-lang0/crates/lang0/src/eval/tests.rs:documented_cpython_differences]。`cargo test` 要有 python3.12；新增构造时补进 crates/lang0/cpython/differential.py。
 - **文档与 spec**：名词、规则与待定集中到各自出处；`$block` 展开、名字唯一、测试标记、参考、篇幅与 token 检查已接入提交钩子。规则见 AGENTS.md。
 - **内核分离**：内容与执行已拆开。Bundle 的依赖与交付资格、构造事实、显式输入与执行 attempt 已接入；Approval、Binding 与 Kernel Bundle 测试验证核心边界。真实 Docker 文件执行通过隔离输入、非零产物、超时回收与未收取 attempt 退役测试。多 Entry 认证和真实模型仍待后续场景。
@@ -73,9 +73,9 @@
 
 已完成；以下保留验收的范围与判据。
 
-- **范围**：Delegate 流程里的 W0、S、ReAct 与文件工具用 `lang0@1` 写，源码在 library/。Kernel 与 Language 都是真的，模型与文件执行按脚本给出结果，root entry 仍在进程内。Kernel 场景和 Lang0 场景都使用显式 Bundle 与 delivery，Atom 的键按 Lang0 的计数器生成。
+- **范围**：Kernel 场景只使用 fake Language 和显式 Bundle；Lang0、模型、文件执行与 Library 的 Delegate 集成在对应仓库维护。
 - **判据**：源码通过构造检查，实际求值得到预期的交办、等待、结果交付与并入；Journal 与预期相符、满足四条不变量；在每个事务提交前后中断，恢复后得到与不中断时相同的 Journal。预期写成可取用的规格，不由求值器自己的输出充当预期。
-- **CPython 差分的范围**：测试用的 `croon` 绑定（crates/lang0/cpython/）给出相同的假结果，对照结束值与 Atom 先后；覆盖文本、消息、dict 顺序、推导式的求值顺序与整除，已列出的语义差异单独检查。
+- **CPython 差分的范围**：Lang0 仓库中的 CPython 绑定给出相同的假结果，对照结束值与 Atom 先后；覆盖文本、消息、dict 顺序、推导式的求值顺序与整除，已列出的语义差异单独检查。
 - **暂不扩展**：并发、生成器、通用 class、with、Checkpoint、Directory 的一等纯函数操作，不因求值器以后可能需要而提前实现；类型声明所需的写法按首版清单定。资源按 Evaluator.md 的规则计量，验证用的上限只作试验参数，实测后再定冻结的数值，不把临时值当成 `lang0@1` 的发布语义。
 
 ## 制造闭环

@@ -6,17 +6,7 @@ edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
 
-[features]
-default = ["lang0"]
-lang0 = ["dep:lang0"]
-
-[[test]]
-name = "lang0"
-path = "tests/lang0.rs"
-required-features = ["lang0"]
-
 [dependencies]
 croon-eval = { path = "../eval" }
 kernel = { path = "../kernel" }
-lang0 = { path = "../../../croon-lang0/crates/lang0", optional = true }
 serde_json = { workspace = true }

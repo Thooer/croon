@@ -10,5 +10,3 @@ publish.workspace = true
 serde_json = { workspace = true }
 sha2 = { workspace = true }
 thiserror = { workspace = true }
-
-# build.rs 用它取出文档里带名字的 block。

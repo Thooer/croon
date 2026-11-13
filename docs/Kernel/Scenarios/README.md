@@ -19,7 +19,7 @@
 
 - Bundle、交付依赖与产物都写在 `values` 里；ID 由规范内容算出，依赖数组排序且无重复。普通内容里的 ID 不自动成为依赖，脚手架不为缺失内容造占位对象。
 - Port spec 与形状用 `$block` 引用 reference.kernel、model.generate、directory.exec 等已有 block，不抄。
-- 源码与目录不抄进 JSON：Value 的内容里出现的 `{"$file": 路径}`、`{"$bytes": 文本}`、`{"$tree": 路径}` 和 `{"$library": {}}` 由脚手架展开为内容与 Bundle；路径相对仓库根。
+- 源码与目录不抄进 JSON：Value 的内容里出现的 `{"$file": 路径}`、`{"$bytes": 文本}` 和 `{"$tree": 路径}` 由脚手架展开为内容与 Bundle；路径相对仓库根。
 - Definition 的 language 是 `fake@1`：只供脚手架登记的假 Language，body 是一个说明用的字符串，不求值。
 - 失败的 message 与 data 还没有规定，写 `""` 与 `null`，只比 kind。
 
@@ -38,7 +38,7 @@
 
 脚手架之前，crates/scenarios/tests/expected.rs 先查预期本身合不合文档里的规则：记录、Definition、四条不变量、取与到达的对应，以及交出的值与结果合所经的 Port spec；用真的 Language 写的 Definition，展开之后还要过它的构造检查。
 
-核心场景可独立运行：`cargo test --offline -p scenarios --no-default-features`，不依赖 Lang0 或 Library。默认启用 lang0 特性，额外构建 Lang0 的场景与 Library；WASM 对照属于相应装配的测试。各场景自己的命名 block 由 scenarios 构建取用，Kernel 构建不嵌入场景。
+核心场景可独立运行：`cargo test --offline -p scenarios`，不依赖 Lang0、Library 或 App。各场景自己的 schema 由 scenarios 直接编译取用，Kernel 构建不嵌入场景。Lang0 和 App 的集成场景由对应仓库负责。
 
 ## 扰动
 
