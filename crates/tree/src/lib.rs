@@ -1,5 +1,13 @@
 //! Tree Bundle 的领域校验。文件系统操作在 `execution`：那是提供者的实现，不属于形状。
-//! 参考：docs/Tree.md。
+//!
+//! 装入或产出 Tree 之前必须知道的四条：
+//!
+//! - [`validate`] 要求目录 Bundle 的直接依赖**恰好**覆盖所有 `file`、`dir` 条目，多一个少一个都失败。
+//! - 名字不得为空、不得含 `/` 或 NUL、不得是 `.` 或 `..`；符号链接的目标不得含 NUL，不算依赖。
+//! - `link` 不引入依赖，也不跟随；跟随是使用方的决定，不是形状的规则。
+//! - 校验只读 JSON 与 [`Bundle`] 的形状，不碰文件系统。路径穿越、符号链接、可执行位怎样变成 Tree，是使用方的事。
+//!
+//! 形状的定义与理由见 `docs/Tree.md`。
 
 use croon_eval::host::HostError;
 use croon_eval::store::Bundle;

@@ -1,5 +1,5 @@
-//! Kernel 在宿主一侧接的效果契约与求值契约。
-//! 参考：docs/Kernel/Language.md；docs/Kernel/Reference.md（通道）。
+//! Kernel 在宿主一侧接的效果契约与求值契约。实现前先读 crate 头部的五条义务。
+//! 理由与 Kernel 侧的收尾规则：docs/Kernel/Reference.md（通道）；docs/Kernel/Language.md。
 
 use crate::store::Content;
 use serde_json::Value as Json;
@@ -38,6 +38,7 @@ pub trait Port {
     fn id(&self) -> &str;
     fn channel(&self) -> Channel;
     fn start(&self, call: &Call) -> Result<Box<dyn Execution>, HostError>;
-    /// Seal late starts and stop all writers for this physical attempt, idempotently.
+    /// 幂等地封住这次物理 attempt 的写者与迟到启动。
+    /// Kernel 提交之后、重启之前换 attempt、恢复时都会调用；同一 attempt 可能被退役多次。
     fn retire(&self, attempt: &str) -> Result<(), HostError>;
 }
