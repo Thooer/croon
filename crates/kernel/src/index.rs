@@ -453,6 +453,12 @@ impl View<'_> {
             }
             Some(Mint::Result { at, name }) => {
                 let born = self.ix.born_by.get(self.ix.record(at)["event"].as_str()?)?;
+                // Collective 导出的 Provided port 落到导出口指向的那个成员。
+                if let Some(port) = name.strip_prefix("port/")
+                    && let Some((member, p)) = self.exported(born, port)
+                {
+                    return Some(Provider::Provided { instance: member, port: p });
+                }
                 Self::result_provider(born, name)
             }
             None => {
@@ -606,12 +612,18 @@ impl View<'_> {
                     "look" | "notify" | "correct" => vec![self.result_spec(at, name)?],
                     other => {
                         let def = self.definition(born)?;
-                        vec![Self::spec_node(
-                            &def,
-                            "provides",
-                            other.strip_prefix("port/")?,
-                            born,
-                        )?]
+                        let port = other.strip_prefix("port/")?;
+                        // 导出的：两节，Seat 的 Interface 在前，Collective 的在后；外面的一方
+                        // 只能按后者交出。Collective 那一节由 Charter 写，没有作者。
+                        if let Some((member, p)) = self.exported(born, port) {
+                            let member_def = self.definition(&member)?;
+                            vec![
+                                Self::spec_node(&member_def, "provides", &p, &member)?,
+                                Self::node_at(&def["interface"]["provides"][port])?,
+                            ]
+                        } else {
+                            vec![Self::spec_node(&def, "provides", port, born)?]
+                        }
                     }
                 })
             }
@@ -690,6 +702,16 @@ impl View<'_> {
 
     /// 一个 Collective 里占着某个 Seat 的成员。成员与 Collective 在同一次事件里诞生，
     /// 所以按诞生的 collective 与 seat 找得到。
+    /// Collective 的一个 Provided port 导出自哪个成员的哪个 Provided port。不是 Collective
+    /// 或没导出这个名字的，是 None。
+    fn exported(&self, collective: &str, port: &str) -> Option<(String, String)> {
+        let def = self.definition(collective)?;
+        def.get("seats")?;
+        let to = def["export"]["provides"].get(port)?;
+        let member = self.member_of(collective, to["seat"].as_str()?)?;
+        Some((member, to["port"].as_str()?.to_owned()))
+    }
+
     pub fn member_of(&self, collective: &str, seat: &str) -> Option<String> {
         self.ix
             .members

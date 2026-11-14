@@ -147,7 +147,7 @@ fn a_charter_is_instantiated_with_its_members_in_one_event() {
     let gate_id = bundle(&k, &gate, &[]);
     let audit_id = bundle(&k, &audit, &[]);
     let charter = json!({
-        "interface": iface(json!({}), json!({"run": any_port()})),
+        "interface": iface(json!({"pass": any_port()}), json!({"run": any_port()})),
         "seats": {
             "gate": {"interface": iface(json!({"pass": any_port()}), json!({"up": any_port()}))},
             "audit": {"interface": iface(json!({}), json!({"see": any_port()}))}
@@ -156,7 +156,7 @@ fn a_charter_is_instantiated_with_its_members_in_one_event() {
             "gate": {"up": {"outer": "run"}},
             "audit": {"see": {"seat": "gate", "port": "pass"}}
         },
-        "export": {"signature": "gate", "provides": {}}
+        "export": {"signature": "gate", "provides": {"pass": {"seat": "gate", "port": "pass"}}}
     });
     let charter_id = bundle(&k, &charter, &[]);
     let (r, c) = root(
@@ -289,6 +289,15 @@ fn a_charter_is_instantiated_with_its_members_in_one_event() {
         assert_eq!(b["seat"], json!(name));
     }
 
+    // 导出口：外面拿到的那一份落到门的 pass，链上两节，Seat 的在前、Collective 的在后。
+    let exported = out["attach"]["port/pass"]["handle"].as_str().expect("导出口给出").to_owned();
+    assert_eq!(
+        view.provider(&exported),
+        Some(Provider::Provided { instance: gate_member.clone(), port: "pass".to_owned() }),
+        "导出口指向占 gate 的成员"
+    );
+    assert_eq!(view.chain(&exported).expect("导出口有链").len(), 2, "Seat 一节加 Collective 一节");
+
     // Collective 的输入只交给 Signature 所在的门；审计者用自己那份。
     let gate_in = k.index().journal(&gate_member).unwrap().birth()["input"].clone();
     let audit_in = k.index().journal(&audit_member).unwrap().birth()["input"].clone();
@@ -324,10 +333,27 @@ fn a_charter_is_instantiated_with_its_members_in_one_event() {
             assert_eq!(port, "pass");
             assert_eq!(
                 instance,
-                gate_member,
+                gate_member.clone(),
                 "指向占 gate 的那个成员"
             );
         }
         other => panic!("应当指向门，得到 {other:?}"),
     }
+
+    // 经导出口交出：view 用完之后再可变借用 k。
+    let sent = k
+        .submit(
+            &c,
+            &json!({"key": "knock", "send": {
+                "to": {"handle": exported},
+                "delivery": {"value": null, "dependencies": []},
+                "attach": {}
+            }}),
+        )
+        .unwrap()
+        .unwrap();
+    assert_eq!(sent["outcome"]["ok"], true, "经导出口交出：{sent}");
+    let last = k.index().journal(&gate_member).unwrap().records.last().unwrap().clone();
+    assert_eq!(last["what"]["arrival"]["port"], "pass", "到达落在门那里：{last}");
+    assert_eq!(last["what"]["arrival"]["sender"], json!(r), "交出的是 root");
 }
