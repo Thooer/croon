@@ -26,7 +26,9 @@ Signature 是一份 Definition 对开始与结束的约定：in 是诞生时的�
 
 Signature 约束交付的 value；开始与结束都可以明确交付 Bundle 依赖，不带 Reference 附带。开始时要给的 Reference 接在 Required port 上；结束时要交回的 Reference 沿一个 Port 附带出去，如 Principal 实例化时接上、或交办时附带的回话途径。要交回的服务还没有状态的，只交回它的 Definition 的 ID，由 Principal 自己实例化，来处与 Control 都在 Principal。理由：结果由持有 Look 或 Notify 的一方得知，out 带附带，向 Notify 登记的一方就拿到了权利；只交给实例化的一方，又成了按身份给权利，Control 也可能已经转交。
 
-Port 有一份描述、in、附带的声明，有的还有 out。Port spec 单独成一个 Value，附带随身带上它。Port spec 可以递归，如回复里又带回复：顶层的 `$defs` 放命名的 Port spec，叶子写 `$ref` 指过去，顶层本身也可以是一个 `$ref`，与 value.schema 的写法一样；in 是一份 Value 的 Schema，有自己的 `$defs`，两层各管各的。两份 Port spec 相同，指去掉各处的 description 之后规范文本相同；含 `$ref` 的，`$ref` 按它所在那份 Port spec 顶层的 `$defs` 解析，所以连同顶层一起比：两份 Port spec 的顶层去掉 description 之后相同，位置也相同。以后放宽到兼容是增量：用到相同的检查，结果都记在 Journal 里，重放不重算；放宽后，现在能过的以后仍能过。
+Port 有一份描述、in、附带的声明，有的还有 out。Port spec 单独成一个 Value，附带随身带上它。Port spec 可以递归，如回复里又带回复：顶层的 `$defs` 放命名的 Port spec，叶子写 `$ref` 指过去，顶层本身也可以是一个 `$ref`，与 value.schema 的写法一样；in 是一份 Value 的 Schema，有自己的 `$defs`，两层各管各的。两份 Port spec 相同，指去掉各处的 description 之后规范文本相同；含 `$ref` 的，`$ref` 按它所在那份 Port spec 顶层的 `$defs` 解析，所以连同顶层一起比：两份 Port spec 的顶层去掉 description 之后相同，位置也相同。
+
+一份是另一份的收窄，指它在能枚举的两处取子集，其余按相同比：`in` 的顶层 anyOf，每一支都在另一份的某一支里相同，没有 anyOf 的按相同比；附带的声明，写明的名字是另一份的子集，required 不比另一份多，同名的叶子按同一条递归。只收这两处，不引入别的包含判断：中间通配这类等价于正则语言的包含，判不准，也就不该写进通道能强制的地方。收窄用在接收方写声明的地方，见 ../Reference.md 的「获得」；那里放宽，现在能过的以后仍能过，结果记在 Journal 里，重放不重算。
 
 - **描述**写它的功能：承诺做什么。描述是作者的说法，随 Definition 冻结。做得怎样是 Competence，不在描述里：它是引擎、Implementation、接上的 Reference、经历组合起来运行时的表现，单看 Definition 看不出。实例化的一方对它的把握来自旁边能检查的事实：Required port、结构属性、过往结果，以及 Instance 接上了什么。
 - **in**：交给它的 Value 的形状。
@@ -90,6 +92,8 @@ Seat 可以用 pin 写死 Definition，连同它的 Signature 的 in；没有写
 | 某个 Seat 的一个 Provided port | 评审把意见交给聚合者 |
 | 某个 Seat 的 Look、Notify 或 Correct | 熔断者接执行者的 Correct，它的 Required port 的 Port spec 只收暂停；审计者接执行者的 Look |
 | 自己的一个 Provided port | 指向自己的 Reference，可附带给对方作回话途径 |
+
+表里第三行的收窄写在接收一方的 Required port 上。Seat 的 Interface 与占它的 Definition 要求相同，所以这一节是 Charter 的作者写的收窄，不是成员自己挑的；成员手里那一份按「收窄」判定，见 ../Reference.md 的「获得」。收窄得比 Collective 的 Required port 更窄时，外层给的更宽的那几份仍在链上，每次交出合取，成员用不到。
 
 Collective 的 Signature 接给一个 Seat：这个成员拿到 Collective 的输入，它的结果就是 Collective 的结果。所以只有它听到 Collective 的输入，其余成员要它转交。其余 Seat 的 Signature 的 in，写死的写在 Charter 里，注入的在实例化时给。Collective 的每个 Provided port 接到某个 Seat 的一个 Provided port。几个成员接到同一个 Port，各得一份派生的 Reference，提供者凭来路分得清是谁。按 Charter 在成员之间接上的派生没有撤销权，随 Collective 一起结束：有撤销权，持有它的一方就能在 Charter 之外改掉成员之间的接线。接到 Collective 的 Required port 的，撤销权照常在给出它的一方，撤销沿派生链传到成员。
 

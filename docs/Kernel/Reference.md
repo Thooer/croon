@@ -26,7 +26,7 @@ Reference 由 Kernel 持有，Instance 手里只有 Handle。Handle 由 Kernel �
 2. **接上与授予**：实例化时，把自己持有的 Reference 接到 Agent 的 Required port 上，并检查每个 Required port 都接上了；运行中，持有 Correct 的一方经授予放进去。成员由 Charter 接上，来源见 Definition 的 Charter。
 3. **附带**：交出时随 Value 带上自己持有的 Reference。Kernel 检查、记下派生，给接收方新的 Handle。Value 里写着的 Handle 不算数：Value 只给出信息。
 
-三条路都满足"给出的不超过自己持有的"，都由 Kernel 检查。三条路上，接收方为这个名字写的声明（Required port 的 Port spec、附带声明里的那一项），都要与派生后链上另外某一节相同，或者写的是不限；否则交出的一方以 type 失败。这一条只为把错记在交出的一方：安全靠「限定」里的合取，不靠它。「相同」的定义与放宽见 Definition 的 Port。所以 Reference 在组合中只能转递、收窄，Competence 却可以增长：一个 Collective 能造成的效果，总在成员持有的 Reference 之内；它能做好的事，可以超出任何一个成员。
+三条路都满足"给出的不超过自己持有的"，都由 Kernel 检查。三条路上，接收方为这个名字写的声明（Required port 的 Port spec、附带声明里的那一项），要么写的是不限，要么是派生后链上另外某一节的收窄；否则交出的一方以 type 失败。这一条只为把错记在交出的一方：安全靠「限定」里的合取，不靠它。「相同」与「收窄」的定义见 Definition 的 Port。所以 Reference 在组合中只能转递、收窄，Competence 却可以增长：一个 Collective 能造成的效果，总在成员持有的 Reference 之内；它能做好的事，可以超出任何一个成员。
 
 - Instance 不天生持有指向自己的 Reference：实例化它的一方或 Charter 把它的某个 Required port 接到它自己的某个 Provided port 或它自己的 Look 上，Kernel 在诞生时派生出这一份，所以它一开始就有。这一份从那个 Port 派生，派生链的最上方就是它；给不给，由实例化的一方或 Charter 定。
 - 不持有指向自己的 Correct：Kernel 拒绝让一个 Instance 经附带、接上或授予持有指向它自己、或包含它的 Collective 的 Correct。Control 分成三个 Port，所以这是看 Reference 指向哪个 Port 的结构判据，不分析 Port spec。「执行者不持有指向自己的 Correct」由此强制。
@@ -51,7 +51,7 @@ Reference 由 Kernel 持有，Instance 手里只有 Handle。Handle 由 Kernel �
 - 经一份 Reference 交出时，Value 要满足链上每一节的 in，附带的名字要每一节的附带声明都允许、required 的都带上。
 - 被附带的那份保留自己的链，再接上所经的那份 Reference 链上每一节对这个名字写的声明：交出的一方写的、接收方写的、中间收窄过的。写的是不限的，不接。
 - 失败记在经这份 Reference 交出的一方。违反的节里有它自己为这份 Reference 写的，是 type；只违反别人加的节，是 denied。它没为这份 Reference 写声明的，提供者那一节算它自己写的。附带不合接收方写的声明，也是交出的一方 type，见「获得」。接收方在这次交出里不失败。
-- 链是索引，能从 Journal 的派生记录加 Definition 重建，不另记。所以重建时会重新解释的三样，有了真实数据就改不了：派生时接上哪些 Port spec；节的记法，Port spec 的 ID 加位置；附带声明怎样解释，它写在已冻结的 Definition 里。改了任何一样，已经持有的 Reference 以后交出时的合取就变了，等于追溯改变权利。接收方的比相同、notify 接下时的检查不在其中：它们的结果记在 Journal 里，重建不重算，可以放宽；notify 的放宽仍要保守，不接下以后交不过去的 `to`。
+- 链是索引，能从 Journal 的派生记录加 Definition 重建，不另记。所以重建时会重新解释的三样，有了真实数据就改不了：派生时接上哪些 Port spec；节的记法，Port spec 的 ID 加位置；附带声明怎样解释，它写在已冻结的 Definition 里。改了任何一样，已经持有的 Reference 以后交出时的合取就变了，等于追溯改变权利。接收方的收窄判定、notify 接下时的检查不在其中：它们的结果记在 Journal 里，重建不重算，可以放宽；notify 的放宽仍要保守，不接下以后交不过去的 `to`。
 
 只查提供者与现在的持有者两侧不够：登记者交回一份只能暂停的 Correct，持有者再把它附带给一个声明了完整 Correct 的一方，登记者那一节就丢了，授权变宽。所以每一节都留在 Reference 上，每次交出都合取。安全只靠校验器，不需要判断一份 Port spec 是否比另一份窄。
 
@@ -127,7 +127,8 @@ Kernel 的实际取得范围与 Language 的程序可见范围分开。后者初
 
 ## 待定
 
-- 「比相同」偏严：没有场景要求兼容，所以选严的一边。接收方自己收窄的声明过不了，如子 Agent 声明 engine 只收便宜的模型，接上的是普通的 llm；现在只能由交出的一方在自己那一侧先收窄。PauseOnly 撞上了它：熔断者自己的 reply 写的只能暂停不算，过得了，是因为登记者的 ask 在交出的一侧写了同一份。放宽到兼容是增量，要一个保守的包含判断；能放宽的先限于精确与路径前缀两种模式，因为通道强制得了；中间通配符的包含判断等价于正则语言的包含；模型名不是层级，不用前缀通配（猜）。随它定的两处记录：Correct 授予的记录不写所指 Port 的 Port spec，比相同时它等于目标那个 Required port 的 Port spec，由诞生里的 Definition 推得出；放宽之后未必相等，再作可选字段加回，是增量。到达的附带写的 spec 是所指 Port 的 Port spec，收窄过的 Correct 也写完整的那一份，链上的收窄不在记录里；接收方要知道收窄，现在只能靠自己那一节写的声明。场景：PauseOnly、角色、特许经营。
+- 值层的收窄仍是缺口：模型名这类不是枚举，如子 Agent 声明 engine 只收便宜的模型，接上的是普通的 llm；收窄只比能枚举的两处，见 ../Definition/README.md 的「Interface 与 Implementation」。要这一种，得先有通道强制得了的包含判断；中间通配等价于正则语言的包含，模型名不是层级，不用前缀通配（猜）。没有场景：PauseOnly 与 Charter 的熔断者都只要选操作，已由收窄覆盖。
+- 收窄不在记录里：链上的节写的是所指 Port 的完整 Port spec，接收方自己写的收窄只在它的声明里，记录里看不到。Correct 授予的记录不写所指 Port 的 Port spec，等于目标那个 Required port 的 Port spec，由诞生里的 Definition 推得出；要写出收窄，再作可选字段加回，是增量。没有场景。
 - 交出的一方写错声明时，接收方的检查过了，链上的合取却为空，错在接收方使用时以 denied 出现，要读 Journal 才追得到交出的一方。Language 的类型检查能在交出的一方提前拦下。denied 的 data 带不带违反的那一节（Port spec 的 ID 与位置），与 definition.failure 的 message、data 怎样规定一起定，也要与来路不透露中间各方一起看。没有场景。
 - 联网：第一版不联网，做法在「通道」。要定的四件事。exec 怎样拿到出站的 Reference。容器里的进程能不能用模型或别的主体的 Port，那样会绕过接在它们前面的东西，如全组预算。地址列不完的宽 Reference，如公开网络，怎样收窄：出站的白名单是一份限定，跟着持有的 Reference 走，不是一份全局名单。凭据在宿主一侧由谁持有：出站代理注入、Plugin 持有，或外部服务持有、Croon 只持有它的 Port；三者都不让凭据进数据，选哪个随提供者；正文写「凭据只在 Kernel」，Plugin 的待定写「凭据留在 Plugin 里」，要统一成一种说法。对账见 Journal 的待定「unknown 的补全」。场景：限流者、全组预算。
 - 提供者环境与资源的事实怎样给检验者读取，随审计与异质检验定；每次隔离执行的输入和产物已由通用交付表达。
