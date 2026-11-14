@@ -35,7 +35,7 @@
 - **Language 装载**：body 与依赖代码都从 Definition Bundle 的固定闭包里读，Kernel 不解释模块结构；求值器一侧的隔离与装载在对应仓库维护。
 - **验证收尾**：spike 已删，结论与重跑位置在各自正文。
 
-**尚未落地**：Charter 的构造与实例化尚未实现，当前构造一律拒绝。持久终止意图与嵌套 Collective 的同次收尾已写进设计，真实终止途中崩溃仍待验证；当前执行 attempt 的退役和普通收取恢复已验证。
+**尚未落地**：Charter 的构造查了四条纯结构的（至少两个 Seat、Interface、每个 Required port 接一种来源且不比它宽、导出不比它指向的宽、没有成员接上自己 Seat 的 Correct）；「写死的 Definition 满足它的 Seat」要读闭包，还没查；实例化仍一律拒绝。持久终止意图与嵌套 Collective 的同次收尾已写进设计，真实终止途中崩溃仍待验证；当前执行 attempt 的退役和普通收取恢复已验证。
 
 ## 下一步
 
