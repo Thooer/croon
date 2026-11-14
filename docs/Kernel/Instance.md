@@ -88,7 +88,7 @@ Collective 没有 body，也没有自己的一步。实例化一份 Charter，Co
 
 - **Instance 的 ID**：位置是造成诞生的一步，再加 Seat 的路径。Collective 的路径为空；成员的是 `seat/<名字>`。嵌套时路径继续延长，所以同一份 Charter 的两个 Collective 实例不会撞。
 - **Handle**：位置是（持有者，在哪儿持有）。Charter 接线给成员的那一份用 `[成员, "wire", 端口名]`，与 root entry 在诞生里取得的 Handle 同一个做法；它没有撤销权，随 Collective 结束。Collective 导出的 Provided port、外面拿到的那一份，链上有两节：Seat 的 Interface 与 Collective 的 Interface，外面的一方只能按后者交出。
-- **对 Collective 的 Control 指到成员**：带 Seat 路径的 Look 与 Notify，由同一个「(Collective, Seat) → 成员」的索引落到占着它的 Instance。这个索引不进记录，由每份诞生写的 collective 与 seat 算出。带路径的生存期与不带路径的同一次事件：成员被 Kernel 结束而 Collective 还在时，索引里那一项就没有了，带路径的 Look 与 Notify 以 denied 拒绝。
+- **对 Collective 的 Control 指到成员**：带 Seat 路径的 Look 与 Notify，由同一个「(Collective, Seat) → 成员」的索引落到占着它的 Instance。这个索引不进记录，由每份诞生写的 collective 与 seat 算出。路径用 / 分段，嵌套时逐段往下找；路径上没有那个 Seat 的，以 denied 拒绝。走路径只是找到同一个 Instance 的另一种方式，不另设规则：成员结束之后，带路径的 Look 与 Notify 照常落到它那里，与对一个已结束的 Instance 的一样，查看、读取照常，登记当场交出结束状态。
 - **名册给谁看**：名册只列接到该成员 Provided port 的 Seat，即谁会向它交东西，方向与「它的来源」相反。所以 Seats 之间的箭头反着读：Charter 的接线写「甲的端口接乙的端口」，名册写「乙的清单里有甲」。它是一个 Instance 认人的接口，由 Charter 的接线与成员的身份算出，不进记录。开会话时由 Kernel 填进 birth 的名册。
 - **Collective 不运行**：它没有 body，也没有 Language，不进 Kernel 里那份要开求值会话的表。它的诞生、结束与施加在它身上的 Correct 各是一条记录，此外不推进。
 - **Signature 所在 Seat 的输入**：Collective 的 Signature 的输入只交给占着那个 Seat 的成员，其余成员要它转交；它们自己的输入来自 pin 或实例化时给的那一份。Signature 所在的 Seat 不另给输入，pin 或实例化请求里给了是 type 拒绝：一份输入只有一处出处。每份输入的依赖与 Cognition 的一样，要在本次交付里。

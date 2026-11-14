@@ -1324,10 +1324,34 @@ impl Kernel {
         self.view().provider(handle) == Some(Provider::Correct(receiver.to_owned()))
     }
 
-    fn look(&self, target: &str, value: &Json) -> Result<Outcome, KernelError> {
-        if value.get("seat").is_some() {
-            return Ok(Outcome::fail("use", "没有这个 Seat"));
+    /// 带 Seat 路径的 Look 与 Notify 落到哪个 Instance：沿路径逐段找占着那个 Seat 的成员，
+    /// 嵌套时接着往下。不带路径的就是目标自己。见 docs/Kernel/Instance.md 的「成员的身份」。
+    fn seat_target(&self, target: &str, value: &Json) -> Result<String, Outcome> {
+        let Some(path) = value.get("seat").and_then(Json::as_str) else {
+            return Ok(target.to_owned());
+        };
+        let view = self.view();
+        let mut at = target.to_owned();
+        for seat in path.split('/') {
+            match view.member_of(&at, seat) {
+                Some(m) => at = m,
+                None => {
+                    return Err(Outcome::fail(
+                        "denied",
+                        format!("路径 {path} 上没有 Seat {seat}"),
+                    ));
+                }
+            }
         }
+        Ok(at)
+    }
+
+    fn look(&self, target: &str, value: &Json) -> Result<Outcome, KernelError> {
+        let target = match self.seat_target(target, value) {
+            Ok(t) => t,
+            Err(o) => return Ok(o),
+        };
+        let target = target.as_str();
         let j = &self.index.journals[target];
         match value["op"].as_str() {
             Some("inspect") => {
@@ -1372,9 +1396,11 @@ impl Kernel {
         value: &Json,
         refs: &BTreeMap<String, String>,
     ) -> Result<Outcome, KernelError> {
-        if value.get("seat").is_some() {
-            return Ok(Outcome::fail("use", "没有这个 Seat"));
-        }
+        let target = match self.seat_target(target, value) {
+            Ok(t) => t,
+            Err(o) => return Ok(o),
+        };
+        let target = target.as_str();
         let to = &refs["to"];
         // 接下时就查：to 链上每一节都要收得下结束状态。
         let view = self.view();

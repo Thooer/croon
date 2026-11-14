@@ -356,4 +356,32 @@ fn a_charter_is_instantiated_with_its_members_in_one_event() {
     let last = k.index().journal(&gate_member).unwrap().records.last().unwrap().clone();
     assert_eq!(last["what"]["arrival"]["port"], "pass", "到达落在门那里：{last}");
     assert_eq!(last["what"]["arrival"]["sender"], json!(r), "交出的是 root");
+
+    // 带 Seat 路径的 Look：经 Collective 的 Look 落到成员；路径上没有的 Seat 是 denied。
+    let look = out["attach"]["look"]["handle"].as_str().unwrap().to_owned();
+    let look_at = |k: &mut Kernel, key: &str, value: Json| {
+        k.submit(
+            &c,
+            &json!({"key": key, "send": {
+                "to": {"handle": look},
+                "delivery": {"value": value, "dependencies": []},
+                "attach": {}
+            }}),
+        )
+        .unwrap()
+        .unwrap()
+    };
+    let seen = look_at(&mut k, "lookgate", json!({"op": "read", "seat": "gate", "from": 0, "limit": 1}));
+    assert_eq!(seen["outcome"]["ok"], true, "{seen}");
+    assert_eq!(
+        seen["outcome"]["value"]["records"][0]["what"]["birth"]["seat"], "gate",
+        "读到的是门的 Journal：{seen}"
+    );
+    let whole = look_at(&mut k, "lookself", json!({"op": "read", "from": 0, "limit": 1}));
+    assert!(
+        whole["outcome"]["value"]["records"][0]["what"]["birth"].get("staffing").is_some(),
+        "不带路径读的是 Collective 自己：{whole}"
+    );
+    let missing = look_at(&mut k, "looknobody", json!({"op": "inspect", "seat": "nobody"}));
+    assert_eq!(missing["outcome"]["error"]["kind"], "denied", "{missing}");
 }
