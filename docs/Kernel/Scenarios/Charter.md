@@ -84,7 +84,7 @@ Required port 写的声明比来源窄一点也过得了。
       "definition": "sha256:dcharter",
       "input": {"value": null,"dependencies": []},
       "seats": {
-        "gate": {"definition": "sha256:dgate","input": {"value": null,"dependencies": []}},
+        "gate": {"definition": "sha256:dgate"},
         "audit": {"definition": "sha256:daudit","input": {"value": null,"dependencies": []}}
       },
       "self": {}

@@ -187,11 +187,43 @@ fn a_charter_is_instantiated_with_its_members_in_one_event() {
     );
     assert_eq!(out["outcome"]["ok"], true, "Charter 要能构造：{out}");
 
-    let spawn = json!({
+    // Signature 所在的 Seat 不另给输入：给了是 type。
+    let mut deps0 = vec![charter_id.clone(), gate_id.clone(), audit_id.clone()];
+    deps0.sort();
+    let run0 = k.index().journal(&r).unwrap().birth()["wire"]["run"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    let twice = json!({
         "definition": charter_id,
-        "input": {"value": null, "dependencies": []},
+        "input": {"value": {"task": "t"}, "dependencies": []},
         "seats": {
             "gate": {"definition": gate_id, "input": {"value": null, "dependencies": []}},
+            "audit": {"definition": audit_id}
+        },
+        "self": {}
+    });
+    let refused = k
+        .submit(
+            &c,
+            &json!({"key": "twice", "send": {
+                "to": {"port": "instantiate"},
+                "delivery": {"value": twice, "dependencies": deps0},
+                "attach": {"run": {"handle": run0}}
+            }}),
+        )
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        refused["outcome"]["error"]["kind"], "type",
+        "Signature 所在的 Seat 另给输入要被拒：{refused}"
+    );
+
+    let spawn = json!({
+        "definition": charter_id,
+        "input": {"value": {"task": "t"}, "dependencies": []},
+        "seats": {
+            "gate": {"definition": gate_id},
             "audit": {"definition": audit_id, "input": {"value": null, "dependencies": []}}
         },
         "self": {}
@@ -256,6 +288,12 @@ fn a_charter_is_instantiated_with_its_members_in_one_event() {
         assert_eq!(b["collective"], json!(collective));
         assert_eq!(b["seat"], json!(name));
     }
+
+    // Collective 的输入只交给 Signature 所在的门；审计者用自己那份。
+    let gate_in = k.index().journal(&gate_member).unwrap().birth()["input"].clone();
+    let audit_in = k.index().journal(&audit_member).unwrap().birth()["input"].clone();
+    assert_eq!(gate_in, birth["input"], "门拿到的是 Collective 的输入");
+    assert_ne!(audit_in, birth["input"], "审计者不拿 Collective 的输入");
 
     // 审计者的 see 接的是门的 pass：链第一节是门的 Provided port，第二节是它自己的 Required port。
     let audit_birth = k.index().journal(&audit_member).unwrap().birth().clone();

@@ -336,11 +336,7 @@
       },
       "seats": {
         "gate": {
-          "definition": "sha256:dgate",
-          "input": {
-            "value": null,
-            "dependencies": []
-          }
+          "definition": "sha256:dgate"
         },
         "audit": {
           "definition": "sha256:daudit",

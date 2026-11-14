@@ -246,6 +246,13 @@ impl Kernel {
                 json!(v.iter().map(ToString::to_string).collect::<Vec<_>>());
             return Ok(rejected);
         }
+        // 与 Cognition 一样，输入的依赖要在本次交付里。
+        if !content.grants(&input["dependencies"]) {
+            return Ok(Outcome::rejected(
+                "denied",
+                "input dependencies outside delivery",
+            ));
+        }
         let seats = def["seats"].as_object().cloned().unwrap_or_default();
         let asked = value["seats"].as_object().cloned().unwrap_or_default();
         for name in asked.keys() {
@@ -280,6 +287,29 @@ impl Kernel {
                     )
                 }
             };
+            // Signature 所在的 Seat 只听 Collective 的输入：再给一份就是两处出处。
+            let signature = def["export"]["signature"].as_str() == Some(name.as_str());
+            let seat_input = if signature {
+                let given = seat
+                    .get("pin")
+                    .and_then(|p| p.get("input"))
+                    .or_else(|| asked.get(name).and_then(|a| a.get("input")));
+                if given.is_some() {
+                    return Ok(Outcome::rejected(
+                        "type",
+                        format!("Seat {name} 是 Signature 所在的 Seat，它的输入就是 Collective 的输入，不另给"),
+                    ));
+                }
+                input.clone()
+            } else {
+                seat_input
+            };
+            if !content.grants(&seat_input["dependencies"]) {
+                return Ok(Outcome::rejected(
+                    "denied",
+                    format!("Seat {name} 的输入依赖不在本次交付里"),
+                ));
+            }
             if content.bundle(&definition).map_err(host_error)?.is_none() {
                 return Ok(Outcome::rejected(
                     "denied",
