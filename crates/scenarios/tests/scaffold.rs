@@ -69,6 +69,7 @@ commit_crash_test!(crash_pauseonly_at_any_commit, "scenario.pauseonly");
 commit_crash_test!(crash_reconnect_at_any_commit, "scenario.reconnect");
 commit_crash_test!(crash_approval_at_any_commit, "scenario.approval");
 commit_crash_test!(crash_binding_at_any_commit, "scenario.binding");
+commit_crash_test!(crash_charter_at_any_commit, "scenario.charter");
 
 #[test]
 fn the_index_is_the_same_in_any_rebuild_order() {

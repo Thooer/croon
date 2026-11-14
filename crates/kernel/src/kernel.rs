@@ -235,10 +235,15 @@ impl Kernel {
             .map(|(i, _)| i.clone())
             .collect();
         for i in running {
-            let external = kernel
-                .view()
-                .definition(&i)
-                .is_some_and(|d| d.get("evaluator").is_some());
+            let Some(def) = kernel.view().definition(&i) else {
+                continue;
+            };
+            // Collective 没有 body，也没有 Language，不进要开求值会话的表，与实例化时一样。
+            // 见 docs/Kernel/Instance.md 的「成员的身份」。
+            if def.get("seats").is_some() {
+                continue;
+            }
+            let external = def.get("evaluator").is_some();
             kernel.live.insert(i, Live::new(external));
         }
         if kernel.can_recover_attempts()? {
