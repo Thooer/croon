@@ -257,6 +257,43 @@ fn values_and_results_fit_the_port_specs_they_pass() {
                             let actual = source["spec"].clone();
                             assert!(kernel::index::same_spec(&actual, "", &declared, ""));
                         }
+                        _ if birth.get("collective").is_some() => {
+                            // 成员的一个 Required port 接的是 Charter 里的一种来源，见
+                            // docs/Kernel/Instance.md「成员的身份」：来源由 Charter 的 wire 与成员
+                            // 的 Seat 给出，形状要指得到。
+                            let collective = birth["collective"].as_str().unwrap();
+                            let seat = birth["seat"].as_str().unwrap();
+                            let charter_birth = body(&journals[collective][0]);
+                            let charter = &values[charter_birth["definition"].as_str().unwrap()]
+                                ["$bundle"];
+                            let source = charter["wire"][seat]
+                                .get(port)
+                                .unwrap_or_else(|| {
+                                    panic!("{name} {instance}：Charter 没写 {seat} 的 {port}")
+                                });
+                            let found = if let Some(outer) = source.get("outer").and_then(|s| s.as_str())
+                            {
+                                charter["interface"]["requires"].get(outer).is_some()
+                            } else if let Some(other) = source.get("seat").and_then(|s| s.as_str()) {
+                                source.get("port").and_then(|p| p.as_str()).is_some_and(|p| {
+                                    charter["seats"][other]["interface"]["provides"]
+                                        .get(p)
+                                        .is_some()
+                                })
+                            } else if let Some(own) = source.get("self").and_then(|s| s.as_str()) {
+                                charter["seats"][seat]["interface"]["provides"]
+                                    .get(own)
+                                    .is_some()
+                            } else {
+                                ["look", "notify", "correct"].iter().any(|op| {
+                                    source
+                                        .get(*op)
+                                        .and_then(|s| s.as_str())
+                                        .is_some_and(|t| charter["seats"].get(t).is_some())
+                                })
+                            };
+                            assert!(found, "{name} {instance}：{port} 的来源指不到");
+                        }
                         None => assert!(
                             kernel.values().any(|k| json_eq(k, &declared)),
                             "{name} {instance}：{port} 不是 Kernel 的 Port"

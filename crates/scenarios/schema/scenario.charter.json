@@ -1,0 +1,1400 @@
+{
+  "values": {
+    "sha256:dgate": {
+      "$bundle": {
+        "language": "fake@1",
+        "interface": {
+          "description": "门：把候选交给审计者",
+          "signature": {
+            "in": {},
+            "out": {}
+          },
+          "provides": {
+            "pass": {
+              "description": "门交给审计者的",
+              "in": {
+                "type": "null"
+              },
+              "attach": {
+                "additionalProperties": false
+              }
+            }
+          },
+          "requires": {
+            "up": {
+              "description": "Collective 的 Required port，门的 Required port 也指向它",
+              "in": {
+                "type": "null"
+              },
+              "attach": {
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "body": "gate"
+      },
+      "dependencies": []
+    },
+    "sha256:daudit": {
+      "$bundle": {
+        "language": "fake@1",
+        "interface": {
+          "description": "审计者：读门的 Journal，回一个结论",
+          "signature": {
+            "in": {},
+            "out": {}
+          },
+          "provides": {},
+          "requires": {
+            "see": {
+              "description": "门交给审计者的",
+              "in": {
+                "type": "null"
+              },
+              "attach": {
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "body": "audit"
+      },
+      "dependencies": []
+    },
+    "sha256:dcharter": {
+      "$bundle": {
+        "interface": {
+          "description": "两个 Seat 的 Charter",
+          "signature": {
+            "in": {},
+            "out": {}
+          },
+          "provides": {},
+          "requires": {
+            "up": {
+              "description": "Collective 的 Required port，门的 Required port 也指向它",
+              "in": {
+                "type": "null"
+              },
+              "attach": {
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "seats": {
+          "gate": {
+            "interface": {
+              "description": "门",
+              "signature": {
+                "in": {},
+                "out": {}
+              },
+              "provides": {
+                "pass": {
+                  "description": "门交给审计者的",
+                  "in": {
+                    "type": "null"
+                  },
+                  "attach": {
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "requires": {
+                "up": {
+                  "description": "Collective 的 Required port，门的 Required port 也指向它",
+                  "in": {
+                    "type": "null"
+                  },
+                  "attach": {
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          },
+          "audit": {
+            "interface": {
+              "description": "审计者",
+              "signature": {
+                "in": {},
+                "out": {}
+              },
+              "provides": {},
+              "requires": {
+                "see": {
+                  "description": "门交给审计者的",
+                  "in": {
+                    "type": "null"
+                  },
+                  "attach": {
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "wire": {
+          "gate": {
+            "up": {
+              "outer": "up"
+            }
+          },
+          "audit": {
+            "see": {
+              "seat": "gate",
+              "port": "pass"
+            }
+          }
+        },
+        "export": {
+          "signature": "gate",
+          "provides": {}
+        }
+      },
+      "dependencies": [
+        "sha256:dgate",
+        "sha256:daudit"
+      ]
+    },
+    "sha256:dcharterroot": {
+      "$bundle": {
+        "evaluator": "external",
+        "interface": {
+          "description": "这份场景的 root entry",
+          "signature": {
+            "in": {},
+            "out": {}
+          },
+          "provides": {
+            "up": {
+              "description": "Collective 的 Required port，门的 Required port 也指向它",
+              "in": {
+                "type": "null"
+              },
+              "attach": {
+                "additionalProperties": false
+              }
+            }
+          },
+          "requires": {
+            "construct": {
+              "description": "检查完整 Definition Bundle；成功事实属于该对象",
+              "in": {
+                "type": "object",
+                "properties": {
+                  "definition": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "definition"
+                ],
+                "additionalProperties": false
+              },
+              "attach": {
+                "additionalProperties": false
+              },
+              "out": {
+                "value": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "additionalProperties": false
+                },
+                "attach": {
+                  "additionalProperties": false
+                }
+              }
+            },
+            "instantiate": {
+              "description": "实例化已构造的 Definition，输入依赖来自本次交付；Required port 从附带或 self 接上",
+              "in": {
+                "type": "object",
+                "properties": {
+                  "definition": {
+                    "type": "string"
+                  },
+                  "input": {
+                    "type": "object",
+                    "properties": {
+                      "value": {},
+                      "dependencies": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "description": "Bundle ID"
+                        },
+                        "description": "显式依赖根的集合；ID 排序、无重复"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "dependencies"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "seats": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "object",
+                      "properties": {
+                        "definition": {
+                          "type": "string"
+                        },
+                        "input": {
+                          "type": "object",
+                          "properties": {
+                            "value": {},
+                            "dependencies": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "description": "Bundle ID"
+                              },
+                              "description": "显式依赖根的集合；ID 排序、无重复"
+                            }
+                          },
+                          "required": [
+                            "value",
+                            "dependencies"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "definition"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "self": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "Required port → port/<自己Provided port> 或 look"
+                  }
+                },
+                "required": [
+                  "definition",
+                  "input",
+                  "seats",
+                  "self"
+                ],
+                "additionalProperties": false
+              },
+              "attach": {
+                "additionalProperties": true
+              },
+              "out": {
+                "value": {
+                  "type": "null"
+                },
+                "attach": {
+                  "additionalProperties": true
+                }
+              }
+            },
+            "up": {
+              "description": "Collective 的 Required port，门的 Required port 也指向它",
+              "in": {
+                "type": "null"
+              },
+              "attach": {
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      },
+      "dependencies": []
+    },
+    "sha256:ccharter": {
+      "definition": "sha256:dcharter"
+    },
+    "sha256:cg": {
+      "definition": "sha256:dgate"
+    },
+    "sha256:ca": {
+      "definition": "sha256:daudit"
+    },
+    "sha256:spawnc": {
+      "definition": "sha256:dcharter",
+      "input": {
+        "value": null,
+        "dependencies": []
+      },
+      "seats": {
+        "gate": {
+          "definition": "sha256:dgate",
+          "input": {
+            "value": null,
+            "dependencies": []
+          }
+        },
+        "audit": {
+          "definition": "sha256:daudit",
+          "input": {
+            "value": null,
+            "dependencies": []
+          }
+        }
+      },
+      "self": {}
+    }
+  },
+  "parts": {
+    "root.born": [
+      {
+        "by": "outside",
+        "what": {
+          "birth": {
+            "definition": "sha256:dcharterroot",
+            "wire": {
+              "construct": "h-rconstruct",
+              "instantiate": "h-rinst",
+              "up": "h-rup"
+            },
+            "self": {
+              "up": "port/up"
+            },
+            "input": {
+              "value": "sha256:null",
+              "dependencies": [
+                "sha256:dcharter",
+                "sha256:dgate",
+                "sha256:daudit"
+              ]
+            },
+            "binding": {
+              "sources": {
+                "construct": {
+                  "kernel": "construct",
+                  "spec": {
+                    "description": "检查完整 Definition Bundle；成功事实属于该对象",
+                    "in": {
+                      "type": "object",
+                      "properties": {
+                        "definition": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "definition"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "attach": {
+                      "additionalProperties": false
+                    },
+                    "out": {
+                      "value": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "attach": {
+                        "additionalProperties": false
+                      }
+                    }
+                  }
+                },
+                "instantiate": {
+                  "kernel": "instantiate",
+                  "spec": {
+                    "description": "实例化已构造的 Definition，输入依赖来自本次交付；Required port 从附带或 self 接上",
+                    "in": {
+                      "type": "object",
+                      "properties": {
+                        "definition": {
+                          "type": "string"
+                        },
+                        "input": {
+                          "type": "object",
+                          "properties": {
+                            "value": {},
+                            "dependencies": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "description": "Bundle ID"
+                              },
+                              "description": "显式依赖根的集合；ID 排序、无重复"
+                            }
+                          },
+                          "required": [
+                            "value",
+                            "dependencies"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "seats": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "object",
+                            "properties": {
+                              "definition": {
+                                "type": "string"
+                              },
+                              "input": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {},
+                                  "dependencies": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "description": "Bundle ID"
+                                    },
+                                    "description": "显式依赖根的集合；ID 排序、无重复"
+                                  }
+                                },
+                                "required": [
+                                  "value",
+                                  "dependencies"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "definition"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "self": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          },
+                          "description": "Required port → port/<自己Provided port> 或 look"
+                        }
+                      },
+                      "required": [
+                        "definition",
+                        "input",
+                        "seats",
+                        "self"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "attach": {
+                      "additionalProperties": true
+                    },
+                    "out": {
+                      "value": {
+                        "type": "null"
+                      },
+                      "attach": {
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "up": {
+      "description": "Collective 的 Required port，门的 Required port 也指向它",
+      "in": {
+        "type": "null"
+      },
+      "attach": {
+        "additionalProperties": false
+      }
+    },
+    "pass": {
+      "description": "门交给审计者的",
+      "in": {
+        "type": "null"
+      },
+      "attach": {
+        "additionalProperties": false
+      }
+    },
+    "gate.iface": {
+      "description": "门",
+      "signature": {
+        "in": {},
+        "out": {}
+      },
+      "provides": {
+        "pass": {
+          "description": "门交给审计者的",
+          "in": {
+            "type": "null"
+          },
+          "attach": {
+            "additionalProperties": false
+          }
+        }
+      },
+      "requires": {
+        "up": {
+          "description": "Collective 的 Required port，门的 Required port 也指向它",
+          "in": {
+            "type": "null"
+          },
+          "attach": {
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    "audit.iface": {
+      "description": "审计者",
+      "signature": {
+        "in": {},
+        "out": {}
+      },
+      "provides": {},
+      "requires": {
+        "see": {
+          "description": "门交给审计者的",
+          "in": {
+            "type": "null"
+          },
+          "attach": {
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    "spawned": {
+      "outcome": {
+        "ok": true,
+        "value": null,
+        "dependencies": []
+      },
+      "attach": {
+        "look": {
+          "handle": "h-clook",
+          "spec": {
+            "description": "读取目标状态或 Journal；Handle 只是信息，依赖按被读位置实际取得的范围交付",
+            "in": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "op": {
+                      "enum": [
+                        "inspect"
+                      ]
+                    },
+                    "seat": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "op"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "op": {
+                      "enum": [
+                        "read"
+                      ]
+                    },
+                    "seat": {
+                      "type": "string"
+                    },
+                    "from": {
+                      "type": "integer"
+                    },
+                    "limit": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "op"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "attach": {
+              "additionalProperties": false
+            },
+            "out": {
+              "value": {},
+              "attach": {
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "notify": {
+          "handle": "h-cnotify",
+          "spec": {
+            "description": "沿附带的 to 交付一次结束结果；带 seat 时作用在对应成员",
+            "in": {
+              "type": "object",
+              "properties": {
+                "seat": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "attach": {
+              "properties": {
+                "to": true
+              },
+              "required": [
+                "to"
+              ],
+              "additionalProperties": false
+            },
+            "out": {
+              "value": {
+                "type": "null"
+              },
+              "attach": {
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "correct": {
+          "handle": "h-ccorrect",
+          "spec": {
+            "description": "纠正目标；Collective 只作用在整体，没有 seat",
+            "in": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/pause"
+                },
+                {
+                  "$ref": "#/$defs/resume"
+                },
+                {
+                  "$ref": "#/$defs/grant"
+                },
+                {
+                  "$ref": "#/$defs/withdraw"
+                }
+              ],
+              "$defs": {
+                "pause": {
+                  "type": "object",
+                  "properties": {
+                    "op": {
+                      "enum": [
+                        "pause"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "op"
+                  ],
+                  "additionalProperties": false
+                },
+                "resume": {
+                  "type": "object",
+                  "properties": {
+                    "op": {
+                      "enum": [
+                        "resume"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "op"
+                  ],
+                  "additionalProperties": false
+                },
+                "grant": {
+                  "type": "object",
+                  "properties": {
+                    "op": {
+                      "enum": [
+                        "grant"
+                      ]
+                    },
+                    "port": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "op",
+                    "port"
+                  ],
+                  "additionalProperties": false
+                },
+                "withdraw": {
+                  "type": "object",
+                  "properties": {
+                    "op": {
+                      "enum": [
+                        "withdraw"
+                      ]
+                    },
+                    "port": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "op",
+                    "port"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "attach": {
+              "properties": {
+                "ref": true
+              },
+              "additionalProperties": false
+            },
+            "out": {
+              "value": {
+                "type": "null"
+              },
+              "attach": {
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      },
+      "derived": {
+        "up": {
+          "handle": "h-cup",
+          "revoker": {
+            "handle": "h-rev21",
+            "spec": {
+              "description": "沿派生链撤销这次给出的 Reference",
+              "in": {
+                "type": "null"
+              },
+              "attach": {
+                "additionalProperties": false
+              },
+              "out": {
+                "value": {
+                  "type": "null"
+                },
+                "attach": {
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "accepted": true
+    }
+  },
+  "journals": {
+    "i-root": [
+      [
+        {
+          "by": "outside",
+          "what": {
+            "birth": {
+              "definition": "sha256:dcharterroot",
+              "wire": {
+                "construct": "h-rconstruct",
+                "instantiate": "h-rinst",
+                "up": "h-rup"
+              },
+              "self": {
+                "up": "port/up"
+              },
+              "input": {
+                "value": "sha256:null",
+                "dependencies": [
+                  "sha256:dcharter",
+                  "sha256:dgate",
+                  "sha256:daudit"
+                ]
+              },
+              "binding": {
+                "sources": {
+                  "construct": {
+                    "kernel": "construct",
+                    "spec": {
+                      "description": "检查完整 Definition Bundle；成功事实属于该对象",
+                      "in": {
+                        "type": "object",
+                        "properties": {
+                          "definition": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "definition"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "attach": {
+                        "additionalProperties": false
+                      },
+                      "out": {
+                        "value": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "attach": {
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  "instantiate": {
+                    "kernel": "instantiate",
+                    "spec": {
+                      "description": "实例化已构造的 Definition，输入依赖来自本次交付；Required port 从附带或 self 接上",
+                      "in": {
+                        "type": "object",
+                        "properties": {
+                          "definition": {
+                            "type": "string"
+                          },
+                          "input": {
+                            "type": "object",
+                            "properties": {
+                              "value": {},
+                              "dependencies": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "description": "Bundle ID"
+                                },
+                                "description": "显式依赖根的集合；ID 排序、无重复"
+                              }
+                            },
+                            "required": [
+                              "value",
+                              "dependencies"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "seats": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "type": "object",
+                              "properties": {
+                                "definition": {
+                                  "type": "string"
+                                },
+                                "input": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": {},
+                                    "dependencies": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string",
+                                        "description": "Bundle ID"
+                                      },
+                                      "description": "显式依赖根的集合；ID 排序、无重复"
+                                    }
+                                  },
+                                  "required": [
+                                    "value",
+                                    "dependencies"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "required": [
+                                "definition"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "self": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "type": "string"
+                            },
+                            "description": "Required port → port/<自己Provided port> 或 look"
+                          }
+                        },
+                        "required": [
+                          "definition",
+                          "input",
+                          "seats",
+                          "self"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "attach": {
+                        "additionalProperties": true
+                      },
+                      "out": {
+                        "value": {
+                          "type": "null"
+                        },
+                        "attach": {
+                          "additionalProperties": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      {
+        "by": "self",
+        "what": {
+          "send": {
+            "key": "cg",
+            "to": {
+              "port": "construct"
+            },
+            "ref": "h-rconstruct",
+            "attach": {},
+            "result": {
+              "outcome": {
+                "ok": true,
+                "value": {
+                  "id": "sha256:dgate"
+                },
+                "dependencies": []
+              },
+              "attach": {},
+              "derived": {},
+              "accepted": true
+            },
+            "delivery": {
+              "value": "sha256:cg",
+              "dependencies": [
+                "sha256:dgate"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "by": "self",
+        "what": {
+          "send": {
+            "key": "ca",
+            "to": {
+              "port": "construct"
+            },
+            "ref": "h-rconstruct",
+            "attach": {},
+            "result": {
+              "outcome": {
+                "ok": true,
+                "value": {
+                  "id": "sha256:daudit"
+                },
+                "dependencies": []
+              },
+              "attach": {},
+              "derived": {},
+              "accepted": true
+            },
+            "delivery": {
+              "value": "sha256:ca",
+              "dependencies": [
+                "sha256:daudit"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "by": "self",
+        "what": {
+          "send": {
+            "key": "cc",
+            "to": {
+              "port": "construct"
+            },
+            "ref": "h-rconstruct",
+            "attach": {},
+            "result": {
+              "outcome": {
+                "ok": true,
+                "value": {
+                  "id": "sha256:dcharter"
+                },
+                "dependencies": []
+              },
+              "attach": {},
+              "derived": {},
+              "accepted": true
+            },
+            "delivery": {
+              "value": "sha256:ccharter",
+              "dependencies": [
+                "sha256:dcharter"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "by": "self",
+        "event": "e-cborn",
+        "what": {
+          "send": {
+            "key": "spawnc",
+            "to": {
+              "port": "instantiate"
+            },
+            "ref": "h-rinst",
+            "attach": {
+              "up": {
+                "to": {
+                  "port": "up"
+                },
+                "ref": "h-rup"
+              }
+            },
+            "result": {
+              "outcome": {
+                "ok": true,
+                "value": null,
+                "dependencies": []
+              },
+              "attach": {
+                "look": {
+                  "handle": "h-clook",
+                  "spec": {
+                    "description": "读取目标状态或 Journal；Handle 只是信息，依赖按被读位置实际取得的范围交付",
+                    "in": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "op": {
+                              "enum": [
+                                "inspect"
+                              ]
+                            },
+                            "seat": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "op"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "op": {
+                              "enum": [
+                                "read"
+                              ]
+                            },
+                            "seat": {
+                              "type": "string"
+                            },
+                            "from": {
+                              "type": "integer"
+                            },
+                            "limit": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "op"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "attach": {
+                      "additionalProperties": false
+                    },
+                    "out": {
+                      "value": {},
+                      "attach": {
+                        "additionalProperties": false
+                      }
+                    }
+                  }
+                },
+                "notify": {
+                  "handle": "h-cnotify",
+                  "spec": {
+                    "description": "沿附带的 to 交付一次结束结果；带 seat 时作用在对应成员",
+                    "in": {
+                      "type": "object",
+                      "properties": {
+                        "seat": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "attach": {
+                      "properties": {
+                        "to": true
+                      },
+                      "required": [
+                        "to"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "out": {
+                      "value": {
+                        "type": "null"
+                      },
+                      "attach": {
+                        "additionalProperties": false
+                      }
+                    }
+                  }
+                },
+                "correct": {
+                  "handle": "h-ccorrect",
+                  "spec": {
+                    "description": "纠正目标；Collective 只作用在整体，没有 seat",
+                    "in": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/pause"
+                        },
+                        {
+                          "$ref": "#/$defs/resume"
+                        },
+                        {
+                          "$ref": "#/$defs/grant"
+                        },
+                        {
+                          "$ref": "#/$defs/withdraw"
+                        }
+                      ],
+                      "$defs": {
+                        "pause": {
+                          "type": "object",
+                          "properties": {
+                            "op": {
+                              "enum": [
+                                "pause"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "op"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "resume": {
+                          "type": "object",
+                          "properties": {
+                            "op": {
+                              "enum": [
+                                "resume"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "op"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "grant": {
+                          "type": "object",
+                          "properties": {
+                            "op": {
+                              "enum": [
+                                "grant"
+                              ]
+                            },
+                            "port": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "op",
+                            "port"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "withdraw": {
+                          "type": "object",
+                          "properties": {
+                            "op": {
+                              "enum": [
+                                "withdraw"
+                              ]
+                            },
+                            "port": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "op",
+                            "port"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "attach": {
+                      "properties": {
+                        "ref": true
+                      },
+                      "additionalProperties": false
+                    },
+                    "out": {
+                      "value": {
+                        "type": "null"
+                      },
+                      "attach": {
+                        "additionalProperties": false
+                      }
+                    }
+                  }
+                }
+              },
+              "derived": {
+                "up": {
+                  "handle": "h-cup",
+                  "revoker": {
+                    "handle": "h-rev21",
+                    "spec": {
+                      "description": "沿派生链撤销这次给出的 Reference",
+                      "in": {
+                        "type": "null"
+                      },
+                      "attach": {
+                        "additionalProperties": false
+                      },
+                      "out": {
+                        "value": {
+                          "type": "null"
+                        },
+                        "attach": {
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "accepted": true
+            },
+            "delivery": {
+              "value": "sha256:spawnc",
+              "dependencies": [
+                "sha256:dcharter",
+                "sha256:dgate",
+                "sha256:daudit"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "i-c": [
+      {
+        "by": "i-root",
+        "event": "e-cborn",
+        "what": {
+          "birth": {
+            "definition": "sha256:dcharter",
+            "wire": {
+              "up": "h-cup"
+            },
+            "input": {
+              "value": "sha256:null",
+              "dependencies": []
+            },
+            "staffing": {
+              "gate": {
+                "definition": "sha256:dgate",
+                "input": {
+                  "value": "sha256:null",
+                  "dependencies": []
+                }
+              },
+              "audit": {
+                "definition": "sha256:daudit",
+                "input": {
+                  "value": "sha256:null",
+                  "dependencies": []
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "i-gate": [
+      {
+        "by": "i-root",
+        "event": "e-cborn",
+        "what": {
+          "birth": {
+            "definition": "sha256:dgate",
+            "wire": {
+              "up": "h-gup"
+            },
+            "input": {
+              "value": "sha256:null",
+              "dependencies": []
+            },
+            "collective": "i-c",
+            "seat": "gate"
+          }
+        }
+      }
+    ],
+    "i-audit": [
+      {
+        "by": "i-root",
+        "event": "e-cborn",
+        "what": {
+          "birth": {
+            "definition": "sha256:daudit",
+            "wire": {
+              "see": "h-asee"
+            },
+            "input": {
+              "value": "sha256:null",
+              "dependencies": []
+            },
+            "collective": "i-c",
+            "seat": "audit"
+          }
+        }
+      }
+    ]
+  }
+}

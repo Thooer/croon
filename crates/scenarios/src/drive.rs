@@ -357,11 +357,22 @@ impl Run {
                             else {
                                 continue;
                             };
+                            // 一次事件可能生出多本：Collective 与它的全部成员。事件头是 Collective，
+                            // 成员的诞生另有 collective 与 seat，按它们分开。
+                            let born = &r0["what"]["birth"];
+                            let seat = born.get("seat").and_then(Json::as_str);
                             match self.scn.journals.iter().find(|(_, x)| {
-                                x[0]["event"] == ev.as_str() && x[0]["what"].get("birth").is_some()
+                                let e = &x[0];
+                                if e["event"] != ev.as_str() || e["what"].get("birth").is_none() {
+                                    return false;
+                                }
+                                e["what"]["birth"].get("seat").and_then(Json::as_str) == seat
                             }) {
                                 Some((p, _)) => p.clone(),
-                                None => panic!("{}：{actual} 的诞生在预期里没有", self.scn.name),
+                                None => panic!(
+                                    "{}：{actual} 的诞生在预期里没有（事件 {ev}，Seat {seat:?}）",
+                                    self.scn.name
+                                ),
                             }
                         };
                         s.bind

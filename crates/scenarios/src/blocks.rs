@@ -89,6 +89,13 @@ pub static BLOCKS: &[Block] = &[
         line: 0,
     },
     Block {
+        name: "scenario.charter",
+        lang: "json",
+        text: include_str!("../schema/scenario.charter.json"),
+        file: "crates/scenarios/schema/scenario.charter.json",
+        line: 0,
+    },
+    Block {
         name: "scenario.delegate",
         lang: "json",
         text: include_str!("../schema/scenario.delegate.json"),
