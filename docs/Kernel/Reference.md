@@ -6,6 +6,8 @@ Reference 是唯一的权利：Instance 持有的、指向某个 Port 的东西�
 
 Reference 由 Kernel 持有，Instance 手里只有 Handle。Handle 由 Kernel 生成，格式见 Instance 的「ID」；全局不重复，用过不再用，记在 Journal 里；它就是这个 Reference 的 ID：持有者用它交出，别人用它指认。Handle 本身不带权利：知道别人的 Handle 或 Instance 的身份，不等于对它有任何权利，能不能用看自己的 c-list。这是对象能力模型（ocap）里 c-list 的做法，不是凭据即权利（bearer token）。不复用，是因为重放时记下的 Handle 必须永远指同一个 Reference；全局不重复，误放进 Value 的 Handle 就解析不到别人那里去。c-list 每个 Instance 一份，不全局共享：全局的服务注册表就是环境权利，所以不设共享的 Context。
 
+Handle 的位置是（持有者，在哪儿持有）：root entry 在诞生里取得的那几份用它在 binding 里写下的那个名字；交给一个 Instance 的用那一步、那个附带的或那个 Required port 的名字；Charter 给成员的用成员与那个 Required port 的名字。位置只由造成它的事实给出，不用随机数，所以同一个系统里同样的记录算出同样的 Handle；这与 ID 是同一套做法，见 ../Instance.md 的「ID」。
+
 ## 提供者
 
 每份 Reference 所指的 Port 都由 Journal 与 Value 唯一确定。派生继承所指的 Port，沿来源追溯；接收方的诞生、到达与授予记录解释它获得了哪一份。派生时增加的收窄见「限定」。
@@ -22,7 +24,7 @@ Reference 由 Kernel 持有，Instance 手里只有 Handle。Handle 由 Kernel �
 
 进来的 Reference 只有两个去处：放进一个 Required port，或者成为一个新的 Handle。交出时用 Required port 的名字与用 Handle 是同一种操作；运行中拿到的 Reference 能直接用。对应 ocap 的三条路：
 
-1. **实例化**：实例化的一方得到 Agent 每个 Provided port 的 Reference，加上对它的 Look、Notify 与 Correct，各是一个新的 Handle，可以分开转交。实例化一份 Charter 得到的 Port 从占着那个 Seat 的成员的 Provided port 派生，链上有 Seat 与 Collective 的 Interface 写的两节：外面的一方只能按 Collective 的 Interface 交出。
+1. **实例化**：实例化的一方得到 Agent 每个 Provided port 的 Reference，加上对它的 Look、Notify 与 Correct，各是一个新的 Handle，可以分开转交。实例化一份 Charter 得到的 Port 从占着那个 Seat 的成员的 Provided port 派生，链上有 Seat 与 Collective 的 Interface 写的两节：外面的一方只能按 Collective 的 Interface 交出。它的 Control 目标是 Collective，带 Seat 路径的 Look 与 Notify 由同一个「(Collective, Seat) → 成员」的索引落到成员身上，规则与为什么没有路径的 Correct 见 ../Instance.md 的「成员的身份」。
 2. **接上与授予**：实例化时，把自己持有的 Reference 接到 Agent 的 Required port 上，并检查每个 Required port 都接上了；运行中，持有 Correct 的一方经授予放进去。成员由 Charter 接上，来源见 Definition 的 Charter。
 3. **附带**：交出时随 Value 带上自己持有的 Reference。Kernel 检查、记下派生，给接收方新的 Handle。Value 里写着的 Handle 不算数：Value 只给出信息。
 

@@ -79,8 +79,19 @@ Kernel 不提供默认工作区或当前产物。程序从 Signature 的输入�
 
 由 Cognition 驱动的 Individual 在 body 求值结束时结束：结果按 Signature 的 out 检查，Kernel 写下结束，在同一个事务里按 Notify 上的登记交出结束状态。之后它的 Provided port 失效：持有指向它们的 Reference、自己还没结束的一方各记一条失效，再交给它的被拒；已结束的一方的 Journal 到结束为止，不再记。对它的 Look 与 Notify 仍然有效：查看、读取照常，向 Notify 登记当场交出结束状态；对它的 Correct 以 denied 失败，已经没有可纠正的。它的 Journal 保留，可以读取，可以追责。
 
-Collective 没有 body，也没有自己的一步。实例化一份 Charter，Collective 与它的全部成员的诞生是一次事件，在同一个事务里写下：Collective 的诞生写着人选，即每个 Seat 由哪份 Definition 来占；每个成员的诞生写着所属的 Collective、占的 Seat、名册，以及按 Charter 接上的 Reference。占着 Signature 所在 Seat 的成员结束，Collective 就结束：结果按 Collective 的 Signature 的 out 检查，结束状态按 Notify 上的登记交出；其余成员由 Kernel 当场结束，见「执行」，这也是同一次事件。别的成员先结束，只是它的 Provided port 失效。Collective 的 Journal 只记它自己发生的事：诞生、结束、施加在它身上的 Correct；成员的诞生与结束记在成员自己那里。一个 Collective 发生过什么，是它与它的成员的 Journal 的投影。
+Collective 没有 body，也没有自己的一步。实例化一份 Charter，Collective 与它的全部成员的诞生是一次事件，在同一个事务里写下：Collective 的诞生写着人选，即每个 Seat 由哪份 Definition 来占；每个成员的诞生写着所属的 Collective、占的 Seat，以及按 Charter 接上的 Reference。名册不进记录：它由 Charter 的接线与成员的身份算出，见「成员的身份」。占着 Signature 所在 Seat 的成员结束，Collective 就结束：结果按 Collective 的 Signature 的 out 检查，结束状态按 Notify 上的登记交出；其余成员由 Kernel 当场结束，见「执行」，这也是同一次事件。别的成员先结束，只是它的 Provided port 失效。Collective 的 Journal 只记它自己发生的事：诞生、结束、施加在它身上的 Correct；成员的诞生与结束记在成员自己那里。一个 Collective 发生过什么，是它与它的成员的 Journal 的投影。
 
+
+## 成员的身份
+
+一次事件生出的全部 Instance 以 Collective 作这次事件的地址，成员的位置是 (Collective, Seat)。
+
+- **Instance 的 ID**：位置是造成诞生的一步，再加 Seat 的路径。Collective 的路径为空；成员的是 `seat/<名字>`。嵌套时路径继续延长，所以同一份 Charter 的两个 Collective 实例不会撞。
+- **Handle**：位置是（持有者，在哪儿持有）。Charter 接线给成员的那一份用 `[成员, "wire", 端口名]`，与 root entry 在诞生里取得的 Handle 同一个做法；它没有撤销权，随 Collective 结束。Collective 导出的 Provided port、外面拿到的那一份，链上有两节：Seat 的 Interface 与 Collective 的 Interface，外面的一方只能按后者交出。
+- **对 Collective 的 Control 指到成员**：带 Seat 路径的 Look 与 Notify，由同一个「(Collective, Seat) → 成员」的索引落到占着它的 Instance。这个索引不进记录，由每份诞生写的 collective 与 seat 算出。带路径的生存期与不带路径的同一次事件：成员被 Kernel 结束而 Collective 还在时，索引里那一项就没有了，带路径的 Look 与 Notify 以 denied 拒绝。
+- **名册给谁看**：名册只列接到该成员 Provided port 的 Seat，即谁会向它交东西，方向与「它的来源」相反。所以 Seats 之间的箭头反着读：Charter 的接线写「甲的端口接乙的端口」，名册写「乙的清单里有甲」。它是一个 Instance 认人的接口，由 Charter 的接线与成员的身份算出，不进记录。开会话时由 Kernel 填进 birth 的名册。
+- **Collective 不运行**：它没有 body，也没有 Language，不进 Kernel 里那份要开求值会话的表。它的诞生、结束与施加在它身上的 Correct 各是一条记录，此外不推进。
+- **Signature 所在 Seat 的输入**：Collective 的 Signature 的输入只交给占着那个 Seat 的成员，其余成员要它转交；它们自己的输入来自 pin 或实例化时给的那一份。
 
 ## Control
 

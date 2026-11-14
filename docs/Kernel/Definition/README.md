@@ -115,11 +115,15 @@ Charter 承诺的是接线与写死的规则，不承诺成员的状态。成员
 
 | 何时 | 查什么 |
 |---|---|
-| 构造 | 至少两个 Seat；每个 Required port 恰好接一种来源，形状兼容；导出的形状兼容；写死的 Definition 满足它的 Seat；没有成员接上自己 Seat 的 Correct；Seat 里的 Definition 可以是 Charter，按内容寻址，所以没有环 |
-| 实例化 | 人选覆盖每个没有写死的 Seat，满足 Interface；Collective 的 Required port 都接上了 |
+| 构造 | 至少两个 Seat；每个 Required port 恰好接一种来源，形状兼容（接收方的声明是来源的收窄）；导出的形状兼容（Collective 的不比那个 Seat 的宽）；写死的 Definition 满足它的 Seat；没有成员接上自己 Seat 的 Correct；Seat 里的 Definition 可以是 Charter，按内容寻址，所以没有环 |
+| 实例化 | 人选覆盖每个没有写死的 Seat，占座的 Definition 与 Seat 的 Interface 相同；Collective 的 Required port 都接上了 |
 | 运行中 | 每次交出照常按 Port 查；授予、收回与失效按「刚性」改变接线，成员固定 |
 
-构造与实例化的检查，都在任何成员运行之前做完。审计者是否独立、敏感的东西是否分给了不同的成员，这类图性质是 Charter 数据上的纯函数，Kernel 不查：查哪些是策略。
+构造与实例化的检查，都在任何成员运行之前做完。
+
+两处分着查，因为能查的东西不同。构造只看这一份 Charter 的数据，所以「不比来源宽」这种接收方一侧的判断在那里做：它是纯函数，只有 Charter 自己的一份数据。实例化看得到坐进来的是哪份 Definition，所以「占座的与 Seat 的 Interface 相同」在那里做。因此实例化时不必再查一遍来源：Seat 的 Interface 与成员的逐字相同，成员写的声明就是 Seat 写的声明，构造时已经不比来源宽。
+
+审计者是否独立、敏感的东西是否分给了不同的成员，这类图性质是 Charter 数据上的纯函数，Kernel 不查：查哪些是策略。
 
 
 ## 形状

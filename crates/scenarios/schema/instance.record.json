@@ -606,12 +606,6 @@
         "seat": {
           "type": "string"
         },
-        "roster": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
         "staffing": {
           "type": "object",
           "additionalProperties": {

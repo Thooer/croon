@@ -97,6 +97,8 @@ pub struct Index {
     pub birth_wire: BTreeMap<String, (String, String)>,
     /// 事件 → 造成它的那一步。
     pub events: BTreeMap<String, Pos>,
+    /// (Collective, Seat) → 占着它的成员。由每份诞生写的 collective 与 seat 算出，不另记。
+    pub members: BTreeMap<(String, String), String>,
     /// 实例化那一步的事件 → 生出的 Instance。
     pub born_by: BTreeMap<String, String>,
     /// 成功的交出：经哪个 Handle → 位置。撤销与 Notify 的登记从这里查。
@@ -150,7 +152,18 @@ impl Index {
                         .insert(h, (instance.to_owned(), port.clone()));
                 }
                 if let Some(event) = record.get("event").and_then(Json::as_str) {
-                    self.born_by.insert(event.to_owned(), instance.to_owned());
+                    // 一次事件可能生出多个 Instance（Charter 的 Collective 与全部成员）。事件头是
+                    // 不带 collective 的那一份，即 Collective 自己；成员另有一条 (Collective, Seat)。
+                    match body.get("collective").and_then(Json::as_str) {
+                        Some(collective) => {
+                            let seat = body["seat"].as_str().unwrap_or_default();
+                            self.members
+                                .insert((collective.to_owned(), seat.to_owned()), instance.to_owned());
+                        }
+                        None => {
+                            self.born_by.insert(event.to_owned(), instance.to_owned());
+                        }
+                    }
                 }
             }
             "send" => {
@@ -677,15 +690,11 @@ impl View<'_> {
 
     /// 一个 Collective 里占着某个 Seat 的成员。成员与 Collective 在同一次事件里诞生，
     /// 所以按诞生的 collective 与 seat 找得到。
-    fn member_of(&self, collective: &str, seat: &str) -> Option<String> {
+    pub fn member_of(&self, collective: &str, seat: &str) -> Option<String> {
         self.ix
-            .journals
-            .iter()
-            .find(|(_, j)| {
-                let b = j.birth();
-                b["collective"] == collective && b["seat"] == seat
-            })
-            .map(|(i, _)| i.clone())
+            .members
+            .get(&(collective.to_owned(), seat.to_owned()))
+            .cloned()
     }
 
     /// 派生出的链：父的链，接上所经那份 Reference 链上每一节对这个名字写的声明，
