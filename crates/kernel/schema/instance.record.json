@@ -538,33 +538,7 @@
         "wire": {
           "type": "object",
           "additionalProperties": {
-            "anyOf": [
-              {
-                "type": "string",
-                "description": "Handle：root 的在 binding 里指出来源，其余的在付出它的那一步的派生记录里"
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "handle": {
-                    "type": "string"
-                  },
-                  "parent": {
-                    "type": "string"
-                  },
-                  "via": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "handle",
-                  "parent",
-                  "via"
-                ],
-                "additionalProperties": false,
-                "description": "Charter 接上的：parent 是 Collective 的那个 Required port，via 是喂给它的来源"
-              }
-            ]
+            "type": "string"
           }
         },
         "binding": {
