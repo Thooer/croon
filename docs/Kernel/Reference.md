@@ -51,6 +51,7 @@ Reference 由 Kernel 持有，Instance 手里只有 Handle。Handle 由 Kernel �
 - 经一份 Reference 交出时，Value 要满足链上每一节的 in，附带的名字要每一节的附带声明都允许、required 的都带上。
 - 被附带的那份保留自己的链，再接上所经的那份 Reference 链上每一节对这个名字写的声明：交出的一方写的、接收方写的、中间收窄过的。写的是不限的，不接。
 - 失败记在经这份 Reference 交出的一方。违反的节里有它自己为这份 Reference 写的，是 type；只违反别人加的节，是 denied。它没为这份 Reference 写声明的，提供者那一节算它自己写的。附带不合接收方写的声明，也是交出的一方 type，见「获得」。接收方在这次交出里不失败。
+- Charter 接上的那些没有交出的一方：Collective 没有自己的一步，成员也没收到过一次交出，所以不是派生，是构成。成员那边的 wire 只记 Handle，来源不记在成员身上：Charter 可以改，成员的诞生是固定的，记在成员那儿就会过时。链在重建时算：从 Collective 的诞生找到 Charter 的 Definition，从它的 wire 读出这个 Seat 的这个 Required port 接的是哪一种来源，那一份的 Port spec 就是第一节；来源是 outer 的，第一节是 Collective 那个 Required port 的链。所以接入两种之外，链的来源只有两处：Journal 的派生记录，与 Charter 的 Definition 加 Collective 的诞生。
 - 链是索引，能从 Journal 的派生记录加 Definition 重建，不另记。所以重建时会重新解释的三样，有了真实数据就改不了：派生时接上哪些 Port spec；节的记法，Port spec 的 ID 加位置；附带声明怎样解释，它写在已冻结的 Definition 里。改了任何一样，已经持有的 Reference 以后交出时的合取就变了，等于追溯改变权利。接收方的收窄判定、notify 接下时的检查不在其中：它们的结果记在 Journal 里，重建不重算，可以放宽；notify 的放宽仍要保守，不接下以后交不过去的 `to`。
 
 只查提供者与现在的持有者两侧不够：登记者交回一份只能暂停的 Correct，持有者再把它附带给一个声明了完整 Correct 的一方，登记者那一节就丢了，授权变宽。所以每一节都留在 Reference 上，每次交出都合取。安全只靠校验器，不需要判断一份 Port spec 是否比另一份窄。

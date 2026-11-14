@@ -455,6 +455,10 @@ impl View<'_> {
             }
             None => {
                 let (instance, port) = self.ix.birth_wire.get(handle)?;
+                let birth = self.ix.journal(instance)?.birth().clone();
+                if let Some(collective) = birth.get("collective").and_then(Json::as_str) {
+                    return self.charter_provider(collective, instance, &birth, port);
+                }
                 if let Some(target) = self.self_target(instance, port) {
                     return Self::self_provider(instance, &target);
                 }
@@ -483,6 +487,48 @@ impl View<'_> {
     }
 
     /// 来源第一节固定准确规格；同一 Provider 可以通过不同契约取得。
+    /// 成员的某个 Required port 在 Charter 里接的那一种来源，指向谁。与 `charter_source`
+    /// 同一份数据；没有作者，所以只看是哪一种。
+    fn charter_provider(
+        &self,
+        collective: &str,
+        member: &str,
+        birth: &Json,
+        port: &str,
+    ) -> Option<Provider> {
+        let charter = self.definition(collective)?;
+        let seat = birth["seat"].as_str()?;
+        let source = charter["wire"].get(seat)?.get(port)?;
+        if let Some(outer) = source.get("outer").and_then(Json::as_str) {
+            let handle = self.ix.journal(collective)?.birth()["wire"].get(outer)?.as_str()?;
+            return self.provider(handle);
+        }
+        if let Some(p) = source.get("self").and_then(Json::as_str) {
+            return Some(Provider::Provided {
+                instance: member.to_owned(),
+                port: p.to_owned(),
+            });
+        }
+        let other = match source.get("seat").and_then(Json::as_str) {
+            Some(other) => self.member_of(collective, other)?,
+            None => {
+                let op = ["look", "notify", "correct"]
+                    .into_iter()
+                    .find(|op| source.get(op).is_some())?;
+                let seat = source[op].as_str()?;
+                return Some(match op {
+                    "look" => Provider::Look(self.member_of(collective, seat)?),
+                    "notify" => Provider::Notify(self.member_of(collective, seat)?),
+                    _ => Provider::Correct(self.member_of(collective, seat)?),
+                });
+            }
+        };
+        Some(Provider::Provided {
+            instance: other,
+            port: source.get("port")?.as_str()?.to_owned(),
+        })
+    }
+
     pub fn source_spec(&self, handle: &str) -> Option<String> {
         Some(self.chain(handle)?.first()?.spec.clone())
     }
@@ -569,8 +615,16 @@ impl View<'_> {
             }
             None => {
                 let (instance, port) = self.ix.birth_wire.get(handle)?;
+                let j = self.ix.journal(instance)?;
                 let def = self.definition(instance)?;
                 let required = Self::spec_node(&def, "requires", port, instance)?;
+                // 成员的一个 Required port 接的是 Charter 里的一种来源。链从 Collective 的诞生与
+                // Charter 的 Definition 重建，不另记：成员那边的 wire 只有 Handle。
+                if let Some(collective) = j.birth().get("collective").and_then(Json::as_str) {
+                    let mut out = self.charter_source(collective, j.birth(), port)?;
+                    out.push(required);
+                    return Some(out);
+                }
                 let first = match self.self_target(instance, port) {
                     Some(t) if t == "look" => self.self_look_node(instance)?,
                     Some(t) => {
@@ -589,6 +643,60 @@ impl View<'_> {
                 Some(vec![first, required])
             }
         }
+    }
+
+    /// 成员的某个 Required port 在 Charter 里接的那一种来源，作为链的第一节（或前几节）。
+    /// 四种来源都能从两份 Definition 推出来：Charter 的 `wire` 指向哪一种，被指的那一份的
+    /// Port spec 就是那一节。没有作者：写下它的是 Charter，不是一个 Instance。
+    fn charter_source(&self, collective: &str, member: &Json, port: &str) -> Option<Vec<Node>> {
+        let charter = self.definition(collective)?;
+        let seat = member["seat"].as_str()?;
+        let source = charter["wire"].get(seat)?.get(port)?;
+        if let Some(outer) = source.get("outer").and_then(Json::as_str) {
+            let handle = self.ix.journal(collective)?.birth()["wire"].get(outer)?.as_str()?;
+            return self.chain(handle);
+        }
+        let node = match source.get("self").and_then(Json::as_str) {
+            Some(p) => Self::node_at(&charter["seats"][seat]["interface"]["provides"][p])?,
+            None => match source.get("seat").and_then(Json::as_str) {
+                Some(other) => {
+                    let p = source.get("port")?.as_str()?;
+                    Self::node_at(&charter["seats"][other]["interface"]["provides"][p])?
+                }
+                None => {
+                    let op = ["look", "notify", "correct"]
+                        .into_iter()
+                        .find(|op| source.get(op).is_some())?;
+                    Node {
+                        spec: kernel_spec(op).1.to_string(),
+                        ptr: String::new(),
+                        author: None,
+                    }
+                }
+            },
+        };
+        Some(vec![node])
+    }
+
+    fn node_at(spec: &Json) -> Option<Node> {
+        Some(Node {
+            spec: ValueId::of_json(spec).ok()?.to_string(),
+            ptr: String::new(),
+            author: None,
+        })
+    }
+
+    /// 一个 Collective 里占着某个 Seat 的成员。成员与 Collective 在同一次事件里诞生，
+    /// 所以按诞生的 collective 与 seat 找得到。
+    fn member_of(&self, collective: &str, seat: &str) -> Option<String> {
+        self.ix
+            .journals
+            .iter()
+            .find(|(_, j)| {
+                let b = j.birth();
+                b["collective"] == collective && b["seat"] == seat
+            })
+            .map(|(i, _)| i.clone())
     }
 
     /// 派生出的链：父的链，接上所经那份 Reference 链上每一节对这个名字写的声明，
@@ -1005,6 +1113,114 @@ mod tests {
             "撤销沿派生链递归"
         );
         assert!(!view.revoked("h-hme"));
+    }
+
+    /// Charter 接上的那一份：链从 Collective 的诞生与 Charter 的 Definition 重建。
+    /// 成员的 wire 里只有 Handle，来源不记在成员那边。
+    #[test]
+    fn a_member_wire_chain_is_rebuilt_from_the_charter() {
+        let dir = TempDir::new("charter");
+        let store = ContentStore::open(&dir.0).unwrap();
+        let put = |v: Json| -> String {
+            let content = store.put_json(&v).unwrap().to_string();
+            let b = json!({"content": content, "dependencies": []});
+            store.put_json(&b).unwrap().to_string()
+        };
+        let run = json!({"description": "跑", "in": {"type": "null"}, "attach": {"additionalProperties": false}});
+        let back = json!({"description": "回", "in": {"type": "null"}, "attach": {"additionalProperties": false}});
+        let sees = json!({"description": "看", "in": {}, "attach": {"additionalProperties": false}});
+        let charter_def = json!({
+            "interface": {"description": "集体", "signature": {"in": {}, "out": {}}, "provides": {}, "requires": {"run": sees}},
+            "seats": {
+                "gate": {"interface": {"description": "门", "signature": {"in": {}, "out": {}}, "provides": {"pass": back}, "requires": {"up": run}}},
+                "audit": {"interface": {"description": "审", "signature": {"in": {}, "out": {}}, "provides": {}, "requires": {"see": sees}}}
+            },
+            "wire": {"gate": {"up": {"outer": "run"}}, "audit": {"see": {"seat": "gate", "port": "pass"}}},
+            "export": {"signature": "gate", "provides": {}}
+        });
+        store_specs(&store, &charter_def);
+        let charter = put(charter_def);
+        let member_def = json!({
+            "language": "fake@1",
+            "interface": {"description": "门", "signature": {"in": {}, "out": {}}, "provides": {"pass": back}, "requires": {"up": run}},
+            "body": "gate"
+        });
+        store_specs(&store, &member_def);
+        let member = put(member_def);
+        let auditor_def = json!({
+            "language": "fake@1",
+            "interface": {"description": "审", "signature": {"in": {}, "out": {}}, "provides": {}, "requires": {"see": sees}},
+            "body": "audit"
+        });
+        store_specs(&store, &auditor_def);
+        let auditor = put(auditor_def);
+
+        let mut ix = Index::default();
+        ix.apply(
+            "i-c",
+            json!({"seq": 0, "at": "t", "by": "i-root", "event": "e-born", "what": {"birth": {
+                "definition": charter, "input": {"value": "i", "dependencies": []},
+                "wire": {"run": "h-crun"}, "staffing": {}
+            }}}),
+        );
+        ix.apply(
+            "i-gate",
+            json!({"seq": 0, "at": "t", "by": "i-zero", "event": "e-born", "what": {"birth": {
+                "definition": member, "input": {"value": "i", "dependencies": []},
+                "wire": {"up": "h-gateup"}, "collective": "i-c", "seat": "gate"
+            }}}),
+        );
+        ix.apply(
+            "i-audit",
+            json!({"seq": 0, "at": "t", "by": "i-zero", "event": "e-born", "what": {"birth": {
+                "definition": auditor, "input": {"value": "i", "dependencies": []},
+                "wire": {"see": "h-ausee"}, "collective": "i-c", "seat": "audit"
+            }}}),
+        );
+        let view = View {
+            ix: &ix,
+            store: &store,
+        };
+
+        // seat → seat：第一节是被指 Seat 的 Provided port，第二节是成员自己写的 Required port。
+        let chain = view.chain("h-ausee").expect("成员接上的那一份有链");
+        assert_eq!(chain.len(), 2, "来源一节加自己一节");
+        assert_eq!(node_at_json(&view, &chain[0]), back);
+        assert_eq!(node_at_json(&view, &chain[1]), sees);
+        assert_eq!(
+            view.provider("h-ausee"),
+            Some(Provider::Provided {
+                instance: "i-gate".to_owned(),
+                port: "pass".to_owned()
+            })
+        );
+    }
+
+    /// 链上的每一节都按「一份 Port spec 是一个 Value」解开，所以 Port spec 本身要进内容库。
+    fn store_specs(store: &ContentStore, def: &Json) {
+        let sides = [&def["interface"], &def["seats"]];
+        for side in sides {
+            let ifaces: Vec<&Json> = if side.get("interface").is_some() {
+                vec![&side["interface"]]
+            } else {
+                side.as_object()
+                    .into_iter()
+                    .flatten()
+                    .map(|(_, seat)| &seat["interface"])
+                    .collect()
+            };
+            for iface in ifaces {
+                for port in ["provides", "requires"] {
+                    for spec in iface[port].as_object().into_iter().flatten().map(|(_, s)| s) {
+                        store.put_json(spec).unwrap();
+                    }
+                }
+            }
+        }
+    }
+
+    fn node_at_json(view: &View, node: &Node) -> Json {
+        view.port_json(node).expect("这一节能解开")
     }
 
     #[test]

@@ -105,7 +105,7 @@ record 中的 delivery 把 value 写成内容 ID，其他信息形状与会话�
 }
 ```
 
-诞生必须是第一条；结束后不再追加。root entry 的诞生必须有 binding、self，不能有 collective、seat、staffing。普通 Instance 的 self 来自实例化请求；成员有 collective、seat、roster；Collective 有 staffing。这些角色条件在写入决定时检查，不凭可选字段切换契约。
+诞生必须是第一条；结束后不再追加。成员的 wire 只记 Handle：它接的东西从哪来是 Charter 的事，记在 Collective 的诞生与 Charter 的 Definition 里，见 ../Reference.md 的「限定」。root entry 的诞生必须有 binding、self，不能有 collective、seat、staffing。普通 Instance 的 self 来自实例化请求；成员有 collective、seat、roster；Collective 有 staffing。这些角色条件在写入决定时检查，不凭可选字段切换契约。
 
 到达记录谁交的 sender、沿哪一份 via、由哪一步造成的 by。Notify 的 sender 是目标；已经结束后才登记的，by 是登记者，所以两者不能合并。
 
