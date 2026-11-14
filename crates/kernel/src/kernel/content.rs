@@ -57,6 +57,12 @@ impl Kernel {
         if let Err(v) = croon_eval::definition::check_shape(&d) {
             return Ok(Outcome::fail("use", format!("{v:?}")));
         }
+        if d.get("seats").is_some() {
+            let kernel = |op: &str| Some(crate::index::kernel_spec(op).0.clone());
+            if let Err(v) = croon_eval::definition::check_charter(&d, &kernel) {
+                return Ok(Outcome::fail("use", format!("{v:?}")));
+            }
+        }
         if d.get("evaluator").is_some() {
             return Ok(Outcome::fail(
                 "use",

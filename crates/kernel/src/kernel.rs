@@ -1309,7 +1309,9 @@ impl Kernel {
                 None => return false,
             }
         }
-        chain.iter().any(|n| view.same_node(n, &extra))
+        chain
+            .iter()
+            .any(|n| view.same_node(n, &extra) || view.narrow_node(&extra, n))
     }
 
     /// 持有指向自己、或包含自己的 Collective 的 Correct：Kernel 拒绝。

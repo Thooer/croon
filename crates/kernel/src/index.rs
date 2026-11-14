@@ -296,19 +296,8 @@ pub fn kernel_ports() -> Vec<&'static str> {
     ]
 }
 
-/// 去掉各处的 description：字符串值的 description 是描述，对象值的是名为 description 的字段，留着。
-pub fn strip(v: &Json) -> Json {
-    match v {
-        Json::Object(m) => Json::Object(
-            m.iter()
-                .filter(|(k, v)| !(k.as_str() == "description" && v.is_string()))
-                .map(|(k, v)| (k.clone(), strip(v)))
-                .collect(),
-        ),
-        Json::Array(a) => Json::Array(a.iter().map(strip).collect()),
-        other => other.clone(),
-    }
-}
+/// 去掉各处的 description，定义在 croon-eval：Charter 的检查与这里用同一条。
+pub use croon_eval::port::strip;
 
 /// Port 这一层的 `$ref`：顶层与附带声明里的。in 与 out.value 是自身完整的 Schema，它们的 `$ref`
 /// 按自己的 `$defs` 解析，与所在的 Port spec 无关。
@@ -791,6 +780,14 @@ impl View<'_> {
             return false;
         };
         same_spec(&ra, &pa, &rb, &pb)
+    }
+
+    /// `inner` 是 `outer` 的收窄：接收方的声明不比链上的那一节宽。
+    pub fn narrow_node(&self, inner: &Node, outer: &Node) -> bool {
+        let (Some(a), Some(b)) = (self.port_json(inner), self.port_json(outer)) else {
+            return false;
+        };
+        croon_eval::port::narrows(&a, &b)
     }
 
     /// 一节的 Port：in、attach、out。

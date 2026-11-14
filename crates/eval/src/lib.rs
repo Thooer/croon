@@ -20,6 +20,7 @@
 pub mod blocks;
 pub mod definition;
 pub mod host;
+pub mod port;
 pub mod schema;
 pub mod store;
 pub mod value;

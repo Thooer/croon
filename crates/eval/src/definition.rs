@@ -18,16 +18,220 @@ pub fn check_shape(definition: &Json) -> Report {
 
     let mut out = Vec::new();
     if definition.get("seats").is_some() {
-        // 还没有实现的，构造被拒，不放过：放过就是一份没人检查过的 Charter。
-        out.push(Violation {
-            path: String::new(),
-            rule: "shape",
-            message: "Charter 的构造检查还没有实现，构造被拒".to_owned(),
-        });
-        return Err(out);
+        charter(definition, &|_| None, &mut out);
+        return if out.is_empty() { Ok(()) } else { Err(out) };
     }
     interface(&definition["interface"], "/interface", &mut out);
     if out.is_empty() { Ok(()) } else { Err(out) }
+}
+
+/// Charter 的构造检查：见 docs/Kernel/Definition/README.md 的「Charter」的「检查」。这里查得出的
+/// 是纯结构的那几条；写死的 Definition 满足它的 Seat 要读闭包与构造事实，在 Kernel 侧另查。
+///
+/// `kernel` 给出 Kernel 自己那几个 Port 的规格（look、notify、correct）。它不在这一层，所以由
+/// 调用方传入；返回 None 表示这时拿不到，与它们形状兼容的那几条就跳过，其余照查。
+pub fn check_charter(definition: &Json, kernel: &dyn Fn(&str) -> Option<Json>) -> Report {
+    let mut out = Vec::new();
+    charter(definition, kernel, &mut out);
+    if out.is_empty() { Ok(()) } else { Err(out) }
+}
+
+/// Charter 的结构检查：至少两个 Seat；每个 Seat 的 Interface；每个 Required port 恰好接一种
+/// 来源，来源指得到、形状兼容；导出的形状兼容；没有成员接上自己 Seat 的 Correct。
+fn charter(def: &Json, kernel: &dyn Fn(&str) -> Option<Json>, out: &mut Vec<Violation>) {
+    interface(&def["interface"], "/interface", out);
+    let seats = def["seats"].as_object().cloned().unwrap_or_default();
+    if seats.len() < 2 {
+        fail(
+            out,
+            "/seats",
+            format!(
+                "至少要两个 Seat，现在有 {}：只有一个 Seat 的 Charter 与直接实例化那份 Definition 承担同样的保证",
+                seats.len()
+            ),
+        );
+    }
+    for (name, seat) in &seats {
+        let path = format!("/seats/{}", escape(name));
+        if name.is_empty() || name.contains('/') {
+            fail(out, &path, "Seat 的名字非空，不含 /".to_owned());
+        }
+        interface(&seat["interface"], &path, out);
+    }
+
+    let wire = def["wire"].as_object().cloned().unwrap_or_default();
+    for (name, ports) in &wire {
+        let path = format!("/wire/{}", escape(name));
+        let Some(seat) = seats.get(name) else {
+            fail(out, &path, format!("没有名为 {name} 的 Seat"));
+            continue;
+        };
+        let requires = seat["interface"]["requires"]
+            .as_object()
+            .cloned()
+            .unwrap_or_default();
+        for (port, source) in ports.as_object().into_iter().flatten() {
+            let at = format!("{path}/{}", escape(port));
+            let Some(decl) = requires.get(port) else {
+                fail(out, &at, format!("这个 Seat 没有 Required port {port}"));
+                continue;
+            };
+            match source_spec(def, &seats, name, source, kernel, &at, out) {
+                Some(Some(spec)) => {
+                    if !crate::port::narrows(decl, &spec) {
+                        fail(
+                            out,
+                            &at,
+                            "接收方写的声明要比来源的更窄或相同，否则构造时看不出能接上".to_owned(),
+                        );
+                    }
+                }
+                Some(None) => {}
+                None => {}
+            }
+        }
+        for port in requires.keys() {
+            let wired = ports.get(port).is_some();
+            if !wired {
+                fail(
+                    out,
+                    &format!("{path}/{}", escape(port)),
+                    "每个 Required port 恰好接一种来源".to_owned(),
+                );
+            }
+        }
+    }
+    for (name, seat) in &seats {
+        if wire.contains_key(name) {
+            continue;
+        }
+        for port in seat["interface"]["requires"]
+            .as_object()
+            .into_iter()
+            .flatten()
+            .map(|(p, _)| p)
+        {
+            fail(
+                out,
+                &format!("/wire/{}/{}", escape(name), escape(port)),
+                "每个 Required port 恰好接一种来源".to_owned(),
+            );
+        }
+    }
+
+    let export = &def["export"];
+    let signature = export["signature"].as_str().unwrap_or_default();
+    if !seats.contains_key(signature) {
+        fail(
+            out,
+            "/export/signature",
+            format!("没有名为 {signature} 的 Seat"),
+        );
+    }
+    let provides = export["provides"].as_object().cloned().unwrap_or_default();
+    let mine = def["interface"]["provides"]
+        .as_object()
+        .cloned()
+        .unwrap_or_default();
+    for (port, to) in &provides {
+        let at = format!("/export/provides/{}", escape(port));
+        let Some(decl) = mine.get(port) else {
+            fail(out, &at, format!("Collective 没有 Provided port {port}"));
+            continue;
+        };
+        let from = to["seat"].as_str().unwrap_or_default();
+        let target = to["port"].as_str().unwrap_or_default();
+        let Some(seat) = seats.get(from) else {
+            fail(out, &at, format!("没有名为 {from} 的 Seat"));
+            continue;
+        };
+        let Some(spec) = seat["interface"]["provides"].get(target) else {
+            fail(out, &at, format!("这个 Seat 没有 Provided port {target}"));
+            continue;
+        };
+        if !crate::port::narrows(decl, spec) {
+            fail(
+                out,
+                &at,
+                "Collective 的 Interface 不比这个 Seat 的更宽：外面的一方只能按它交出".to_owned(),
+            );
+        }
+    }
+    for port in mine.keys() {
+        if !provides.contains_key(port) {
+            fail(
+                out,
+                &format!("/export/provides/{}", escape(port)),
+                "Collective 的每个 Provided port 接到某个 Seat".to_owned(),
+            );
+        }
+    }
+
+    if let Some(pin) = seats.values().filter_map(|s| s.get("pin")).next()
+        && pin["definition"].as_str().is_none_or(str::is_empty)
+    {
+        fail(out, "/seats", "pin 要写完整 Definition Bundle ID".to_owned());
+    }
+}
+
+/// 一种来源的 Port spec。`Some(None)` 是这时拿不到（Kernel 的那几个），跳过形状比较；
+/// `None` 是已经报了错。
+fn source_spec(
+    def: &Json,
+    seats: &serde_json::Map<String, Json>,
+    seat: &str,
+    source: &Json,
+    kernel: &dyn Fn(&str) -> Option<Json>,
+    at: &str,
+    out: &mut Vec<Violation>,
+) -> Option<Option<Json>> {
+    if let Some(outer) = source.get("outer").and_then(Json::as_str) {
+        return match def["interface"]["requires"].get(outer) {
+            Some(spec) => Some(Some(spec.clone())),
+            None => {
+                fail(out, at, format!("Collective 没有 Required port {outer}"));
+                None
+            }
+        };
+    }
+    if let Some(other) = source.get("seat").and_then(Json::as_str) {
+        let p = source["port"].as_str().unwrap_or_default();
+        let Some(target) = seats.get(other) else {
+            fail(out, at, format!("没有名为 {other} 的 Seat"));
+            return None;
+        };
+        return match target["interface"]["provides"].get(p) {
+            Some(spec) => Some(Some(spec.clone())),
+            None => {
+                fail(out, at, format!("Seat {other} 没有 Provided port {p}"));
+                None
+            }
+        };
+    }
+    if let Some(own) = source.get("self").and_then(Json::as_str) {
+        return match seats.get(seat).and_then(|s| s["interface"]["provides"].get(own)) {
+            Some(spec) => Some(Some(spec.clone())),
+            None => {
+                fail(out, at, format!("这个 Seat 没有 Provided port {own}"));
+                None
+            }
+        };
+    }
+    for op in ["look", "notify", "correct"] {
+        if let Some(target) = source.get(op).and_then(Json::as_str) {
+            if !seats.contains_key(target) {
+                fail(out, at, format!("没有名为 {target} 的 Seat"));
+                return None;
+            }
+            if op == "correct" && target == seat {
+                fail(out, at, "没有成员接上自己 Seat 的 Correct".to_owned());
+                return None;
+            }
+            return Some(kernel(op));
+        }
+    }
+    fail(out, at, "来源要恰好写一种".to_owned());
+    None
 }
 
 /// 把一份报告的路径挂到 `base` 下，并入 `out`。
@@ -301,16 +505,118 @@ mod tests {
         violations(&missing);
     }
 
+    fn iface(provides: Json, requires: Json) -> Json {
+        json!({
+            "description": "接口",
+            "signature": {"in": {"type": "object"}, "out": {"type": "string"}},
+            "provides": provides,
+            "requires": requires
+        })
+    }
+
+    /// 两个 Seat 的最小 Charter：门的 Required port 接 Collective 的，审计者接门的 Provided port。
+    fn chartered(seat_requires: Json, collective_requires: Json) -> Json {
+        json!({
+            "interface": iface(json!({}), collective_requires),
+            "seats": {
+                "gate": {"interface": iface(json!({"pass": port_min()}), seat_requires)},
+                "audit": {"interface": iface(json!({}), json!({"see": port_min()}))}
+            },
+            "wire": {
+                "gate": {"up": {"outer": "run"}},
+                "audit": {"see": {"seat": "gate", "port": "pass"}}
+            },
+            "export": {"signature": "gate", "provides": {}}
+        })
+    }
+
+    fn valid_charter() -> Json {
+        chartered(json!({"up": port_min()}), json!({"run": port_min()}))
+    }
+
     #[test]
-    fn a_charter_is_refused_until_its_checks_exist() {
-        let iface = cognition(json!({}), json!({}))["interface"].clone();
-        let charter = json!({
-            "interface": iface,
-            "seats": {"a": {"interface": iface}},
-            "wire": {"a": {}},
-            "export": {"signature": "a", "provides": {}}
+    fn a_charter_with_two_seats_and_a_wired_graph_passes() {
+        check_shape(&valid_charter()).unwrap();
+    }
+
+    #[test]
+    fn a_charter_needs_at_least_two_seats() {
+        let mut one = valid_charter();
+        let seats = one["seats"].as_object_mut().unwrap();
+        seats.remove("audit");
+        let _ = seats
+            .get_mut("gate")
+            .unwrap()
+            .as_object_mut()
+            .unwrap()
+            .remove("interface");
+        one["seats"]["gate"]["interface"] = iface(json!({"pass": port_min()}), json!({"up": port_min()}));
+        one["wire"] = json!({"gate": {"up": {"outer": "run"}}});
+        one["export"]["signature"] = json!("gate");
+        let v = violations(&one);
+        assert!(v.iter().any(|x| x.message.contains("至少要两个 Seat")), "{v:?}");
+    }
+
+    #[test]
+    fn every_required_port_is_wired_exactly_once() {
+        let mut missing = valid_charter();
+        missing["wire"]["audit"] = json!({});
+        let v = violations(&missing);
+        assert!(
+            v.iter().any(|x| x.path == "/wire/audit/see"),
+            "缺一条来源要报到那个 Port 上：{v:?}"
+        );
+        let mut unknown = valid_charter();
+        unknown["wire"]["audit"]["see"] = json!({"seat": "nobody", "port": "pass"});
+        assert!(
+            violations(&unknown)
+                .iter()
+                .any(|x| x.message.contains("nobody"))
+        );
+    }
+
+    #[test]
+    fn a_receiver_declaration_narrows_the_source_it_comes_from() {
+        let full = json!({"anyOf": [
+            {"type": "object", "properties": {"op": {"enum": ["pause"]}}, "required": ["op"]},
+            {"type": "object", "properties": {"op": {"enum": ["resume"]}}, "required": ["op"]}
+        ]});
+        let pause = json!({"type": "object", "properties": {"op": {"enum": ["pause"]}}, "required": ["op"]});
+        let port_of = |inv: &Json| json!({"description": "d", "in": inv, "attach": {"additionalProperties": false}});
+
+        // 来源只开放 pause，接收方只收 pause：通过。
+        let narrower = chartered(json!({"up": port_of(&pause)}), json!({"run": port_of(&pause)}));
+        check_shape(&narrower).unwrap_or_else(|e| panic!("只收一半是通过的：{e:?}"));
+
+        // 来源只开放 pause，接收方声明整份：比来源宽，构造时报在那一节上。
+        let wider = chartered(json!({"up": port_of(&full)}), json!({"run": port_of(&pause)}));
+        let v = violations(&wider);
+        assert!(v[0].path.contains("/wire/gate/up"), "{v:?}");
+    }
+
+    #[test]
+    fn a_member_cannot_be_wired_to_its_own_seats_correct() {
+        let mut c = valid_charter();
+        c["wire"]["audit"]["see"] = json!({"correct": "audit"});
+        let v = violations(&c);
+        assert!(
+            v.iter().any(|x| x.message.contains("自己 Seat 的 Correct")),
+            "{v:?}"
+        );
+    }
+
+    #[test]
+    fn an_export_cannot_be_wider_than_the_seat_it_points_at() {
+        let mut c = valid_charter();
+        c["interface"]["provides"] = json!({"run": port_min()});
+        c["export"]["provides"] = json!({"run": {"seat": "gate", "port": "pass"}});
+        check_shape(&c).unwrap_or_else(|e| panic!("导出一份相同的 Port 是通过的：{e:?}"));
+
+        let mut wider = c.clone();
+        wider["interface"]["provides"]["run"] = json!({
+            "description": "更宽", "in": {}, "attach": {"additionalProperties": true}
         });
-        let v = violations(&charter);
-        assert!(v[0].message.contains("Charter"), "{}", v[0].message);
+        let v = violations(&wider);
+        assert!(v[0].path.contains("/export/provides/run"), "{v:?}");
     }
 }
