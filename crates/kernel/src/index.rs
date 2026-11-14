@@ -95,6 +95,8 @@ pub struct Index {
     pub mints: BTreeMap<String, Mint>,
     /// 诞生里接上的 Handle → (Instance, Required port)。派生出的也在这里，查 `mints` 优先。
     pub birth_wire: BTreeMap<String, (String, String)>,
+    /// Charter 接上的 Handle → (Collective 的那个 Required port, 喂给它的来源)。
+    pub birth_src: BTreeMap<String, (String, String)>,
     /// 事件 → 造成它的那一步。
     pub events: BTreeMap<String, Pos>,
     /// 实例化那一步的事件 → 生出的 Instance。
@@ -142,12 +144,19 @@ impl Index {
         match kind {
             "birth" => {
                 j.root = record["by"] == "outside";
-                for (port, h) in body["wire"].as_object().into_iter().flatten() {
-                    let h = h.as_str().unwrap_or_default().to_owned();
+                for (port, w) in body["wire"].as_object().into_iter().flatten() {
+                    let Some(h) = wire_handle(w) else { continue };
                     j.wire.insert(port.clone(), h.clone());
                     j.since.entry(h.clone()).or_insert(seq);
                     self.birth_wire
-                        .insert(h, (instance.to_owned(), port.clone()));
+                        .insert(h.clone(), (instance.to_owned(), port.clone()));
+                    if let (Some(parent), Some(via)) = (
+                        w.get("parent").and_then(Json::as_str),
+                        w.get("via").and_then(Json::as_str),
+                    ) {
+                        self.birth_src
+                            .insert(h, (parent.to_owned(), via.to_owned()));
+                    }
                 }
                 if let Some(event) = record.get("event").and_then(Json::as_str) {
                     self.born_by.insert(event.to_owned(), instance.to_owned());
@@ -348,6 +357,15 @@ pub fn same_spec(a_root: &Json, a_ptr: &str, b_root: &Json, b_ptr: &str) -> bool
 
 fn esc(name: &str) -> String {
     name.replace('~', "~0").replace('/', "~1")
+}
+
+/// 诞生里 wire 的一个条目：Handle，或 Charter 接上的 {handle, parent, via}。
+fn wire_handle(w: &Json) -> Option<String> {
+    match w {
+        Json::String(h) => Some(h.clone()),
+        Json::Object(m) => m.get("handle")?.as_str().map(str::to_owned),
+        _ => None,
+    }
 }
 
 /// 索引上的查询：要用到内容库里的 Value（Definition、Port spec、交出的 Value）。
@@ -571,6 +589,11 @@ impl View<'_> {
                 let (instance, port) = self.ix.birth_wire.get(handle)?;
                 let def = self.definition(instance)?;
                 let required = Self::spec_node(&def, "requires", port, instance)?;
+                // Charter 接上的：链 = Collective 那个 Required port 的链，接上所经那份 Reference
+                // 链上每一节对这个名字写的声明，再接上成员自己写的声明。
+                if let Some((parent, via)) = self.ix.birth_src.get(handle) {
+                    return self.derive_chain(parent, via, port, Some(required));
+                }
                 let first = match self.self_target(instance, port) {
                     Some(t) if t == "look" => self.self_look_node(instance)?,
                     Some(t) => {

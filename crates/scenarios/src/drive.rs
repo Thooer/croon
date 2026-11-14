@@ -266,12 +266,12 @@ impl Run {
             .as_object()
             .into_iter()
             .flatten()
-            .filter_map(|(_, h)| {
-                let h = h.as_str()?;
-                if view.provider(h) != Some(kernel::index::Provider::Host(h.into())) {
+            .filter_map(|(_, w)| {
+                let h = wire_handle(w)?;
+                if view.provider(&h) != Some(kernel::index::Provider::Host(h.clone())) {
                     return None;
                 }
-                let (_, port) = kernel.index().birth_wire.get(h)?;
+                let (_, port) = kernel.index().birth_wire.get(&h)?;
                 let binding = &kernel.index().journals[root].birth()["binding"]["sources"][port];
                 let identity = binding["host"].as_str()?.to_owned();
                 let channel = self.channels.get(&identity).copied()?;
@@ -423,7 +423,7 @@ impl Run {
                     .as_object()
                     .into_iter()
                     .flatten()
-                    .find(|(_, handle)| handle.as_str() == Some(source.as_str()))
+                    .find(|(_, w)| wire_handle(w).as_deref() == Some(source.as_str()))
                     .and_then(|(port, _)| {
                         kernel.index().journals[root].birth()["binding"]["sources"][port]["host"]
                             .as_str()
@@ -438,9 +438,13 @@ impl Run {
         }
         let exp = &self.scn.journals[ph];
         if let Some(port) = send["to"]["port"].as_str() {
-            let handle = exp[0]["what"]["birth"]["wire"][port].as_str();
-            return handle
-                .and_then(|h| s.bind.fwd.get(h))
+            let Some(handle) = wire_handle(&exp[0]["what"]["birth"]["wire"][port]) else {
+                return false;
+            };
+            return s
+                .bind
+                .fwd
+                .get(&handle)
                 .is_some_and(|actual| is_provider(actual));
         }
         send["to"]["handle"]
@@ -778,5 +782,14 @@ impl Run {
             "{}：索引不等于对 Journal 的重建",
             self.scn.name
         );
+    }
+}
+
+/// 诞生里 wire 的一个条目：Handle，或 Charter 接上的 {handle, parent, via}。
+fn wire_handle(w: &serde_json::Value) -> Option<String> {
+    match w {
+        serde_json::Value::String(h) => Some(h.clone()),
+        serde_json::Value::Object(m) => m.get("handle")?.as_str().map(str::to_owned),
+        _ => None,
     }
 }

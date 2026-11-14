@@ -68,7 +68,12 @@ record 中的 delivery 把 value 写成内容 ID，其他信息形状与会话�
       "properties":{
         "definition":{"type":"string","description":"完整 Definition Bundle ID"},
         "input":{"$block":"instance.delivery"},
-        "wire":{"type":"object","additionalProperties":{"type":"string"}},
+        "wire":{"type":"object","additionalProperties":{
+          "anyOf":[
+            {"type":"string","description":"Handle：root 的在 binding 里指出来源，其余在付出它的那一步的派生记录里"},
+            {"type":"object","properties":{"handle":{"type":"string"},"parent":{"type":"string"},"via":{"type":"string"}},"required":["handle","parent","via"],"additionalProperties":false,"description":"Charter 接上的：parent 是 Collective 的那个 Required port，via 是喂给它的来源"}
+          ]
+        }},
         "binding":{"$block":"reference.binding"},
         "self":{"type":"object","additionalProperties":{"type":"string"}},
         "collective":{"type":"string"},"seat":{"type":"string"},
@@ -105,7 +110,7 @@ record 中的 delivery 把 value 写成内容 ID，其他信息形状与会话�
 }
 ```
 
-诞生必须是第一条；结束后不再追加。root entry 的诞生必须有 binding、self，不能有 collective、seat、staffing。普通 Instance 的 self 来自实例化请求；成员有 collective、seat、roster；Collective 有 staffing。这些角色条件在写入决定时检查，不凭可选字段切换契约。
+诞生必须是第一条；结束后不再追加。wire 的条目一般是 Handle：root entry 的在 binding 里指出来源，其余的在付出它的那一步的派生记录里。成员有一个 Required port 接的是它所属 Collective 的 Required port，条目写成 {handle, parent, via}，派生链由此接上 Collective 的那几节：parent 是 Collective 那个 Required port 的 Handle，via 是喂给它的来源。Charter 在成员之间接上的也是这一种，所以刚性所说的改接落到成员手里的那一份上。别的条目写成对象是拒绝。root entry 的诞生必须有 binding、self，不能有 collective、seat、staffing。普通 Instance 的 self 来自实例化请求；成员有 collective、seat、roster；Collective 有 staffing。这些角色条件在写入决定时检查，不凭可选字段切换契约。
 
 到达记录谁交的 sender、沿哪一份 via、由哪一步造成的 by。Notify 的 sender 是目标；已经结束后才登记的，by 是登记者，所以两者不能合并。
 
