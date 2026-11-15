@@ -118,7 +118,10 @@ impl Kernel {
             return Ok(Outcome::rejected("denied", "missing Definition"));
         };
         if def.get("evaluator").is_some() {
-            return Ok(Outcome::fail("use", "only Cognition or Charter can be instantiated"));
+            return Ok(Outcome::fail(
+                "use",
+                "only Cognition or Charter can be instantiated",
+            ));
         }
         if def.get("seats").is_some() {
             return self.charter_instantiate(i, key, via, &def_id, &def, value, refs, content);
@@ -297,7 +300,9 @@ impl Kernel {
                 if given.is_some() {
                     return Ok(Outcome::rejected(
                         "type",
-                        format!("Seat {name} 是 Signature 所在的 Seat，它的输入就是 Collective 的输入，不另给"),
+                        format!(
+                            "Seat {name} 是 Signature 所在的 Seat，它的输入就是 Collective 的输入，不另给"
+                        ),
                     ));
                 }
                 input.clone()
@@ -371,7 +376,12 @@ impl Kernel {
         // Collective 自己的 Required port：由实例化的一方接上，派生照常记在这次交出里。
         let mut derived = serde_json::Map::new();
         let mut wire = serde_json::Map::new();
-        for port in iface["requires"].as_object().into_iter().flatten().map(|(p, _)| p) {
+        for port in iface["requires"]
+            .as_object()
+            .into_iter()
+            .flatten()
+            .map(|(p, _)| p)
+        {
             let Some(parent) = refs.get(port) else {
                 return Ok(Outcome::rejected(
                     "type",
@@ -412,11 +422,13 @@ impl Kernel {
         for (name, (definition, seat_input)) in &chosen {
             let child = &members[name];
             let mut member_wire = serde_json::Map::new();
-            for port in def["wire"][name].as_object().into_iter().flatten().map(|(p, _)| p) {
-                member_wire.insert(
-                    port.clone(),
-                    json!(self.handle(&[child, "wire", port])),
-                );
+            for port in def["wire"][name]
+                .as_object()
+                .into_iter()
+                .flatten()
+                .map(|(p, _)| p)
+            {
+                member_wire.insert(port.clone(), json!(self.handle(&[child, "wire", port])));
             }
             let input_id = self.store.put_json(&seat_input["value"])?;
             let birth = json!({"birth": {
@@ -434,7 +446,10 @@ impl Kernel {
         let mut attach = serde_json::Map::new();
         for (port, spec) in iface["provides"].as_object().into_iter().flatten() {
             if def["export"]["provides"][port]["seat"].as_str().is_none() {
-                return Ok(Outcome::rejected("type", format!("导出的 {port} 没有 Seat")));
+                return Ok(Outcome::rejected(
+                    "type",
+                    format!("导出的 {port} 没有 Seat"),
+                ));
             }
             let name = format!("port/{port}");
             attach.insert(

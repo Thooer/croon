@@ -170,7 +170,11 @@ fn charter(def: &Json, kernel: &dyn Fn(&str) -> Option<Json>, out: &mut Vec<Viol
     if let Some(pin) = seats.values().filter_map(|s| s.get("pin")).next()
         && pin["definition"].as_str().is_none_or(str::is_empty)
     {
-        fail(out, "/seats", "pin 要写完整 Definition Bundle ID".to_owned());
+        fail(
+            out,
+            "/seats",
+            "pin 要写完整 Definition Bundle ID".to_owned(),
+        );
     }
 }
 
@@ -209,7 +213,10 @@ fn source_spec(
         };
     }
     if let Some(own) = source.get("self").and_then(Json::as_str) {
-        return match seats.get(seat).and_then(|s| s["interface"]["provides"].get(own)) {
+        return match seats
+            .get(seat)
+            .and_then(|s| s["interface"]["provides"].get(own))
+        {
             Some(spec) => Some(Some(spec.clone())),
             None => {
                 fail(out, at, format!("这个 Seat 没有 Provided port {own}"));
@@ -550,11 +557,15 @@ mod tests {
             .as_object_mut()
             .unwrap()
             .remove("interface");
-        one["seats"]["gate"]["interface"] = iface(json!({"pass": port_min()}), json!({"up": port_min()}));
+        one["seats"]["gate"]["interface"] =
+            iface(json!({"pass": port_min()}), json!({"up": port_min()}));
         one["wire"] = json!({"gate": {"up": {"outer": "run"}}});
         one["export"]["signature"] = json!("gate");
         let v = violations(&one);
-        assert!(v.iter().any(|x| x.message.contains("至少要两个 Seat")), "{v:?}");
+        assert!(
+            v.iter().any(|x| x.message.contains("至少要两个 Seat")),
+            "{v:?}"
+        );
     }
 
     #[test]
@@ -585,11 +596,17 @@ mod tests {
         let port_of = |inv: &Json| json!({"description": "d", "in": inv, "attach": {"additionalProperties": false}});
 
         // 来源只开放 pause，接收方只收 pause：通过。
-        let narrower = chartered(json!({"up": port_of(&pause)}), json!({"run": port_of(&pause)}));
+        let narrower = chartered(
+            json!({"up": port_of(&pause)}),
+            json!({"run": port_of(&pause)}),
+        );
         check_shape(&narrower).unwrap_or_else(|e| panic!("只收一半是通过的：{e:?}"));
 
         // 来源只开放 pause，接收方声明整份：比来源宽，构造时报在那一节上。
-        let wider = chartered(json!({"up": port_of(&full)}), json!({"run": port_of(&pause)}));
+        let wider = chartered(
+            json!({"up": port_of(&full)}),
+            json!({"run": port_of(&pause)}),
+        );
         let v = violations(&wider);
         assert!(v[0].path.contains("/wire/gate/up"), "{v:?}");
     }

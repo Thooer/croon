@@ -290,13 +290,23 @@ fn a_charter_is_instantiated_with_its_members_in_one_event() {
     }
 
     // 导出口：外面拿到的那一份落到门的 pass，链上两节，Seat 的在前、Collective 的在后。
-    let exported = out["attach"]["port/pass"]["handle"].as_str().expect("导出口给出").to_owned();
+    let exported = out["attach"]["port/pass"]["handle"]
+        .as_str()
+        .expect("导出口给出")
+        .to_owned();
     assert_eq!(
         view.provider(&exported),
-        Some(Provider::Provided { instance: gate_member.clone(), port: "pass".to_owned() }),
+        Some(Provider::Provided {
+            instance: gate_member.clone(),
+            port: "pass".to_owned()
+        }),
         "导出口指向占 gate 的成员"
     );
-    assert_eq!(view.chain(&exported).expect("导出口有链").len(), 2, "Seat 一节加 Collective 一节");
+    assert_eq!(
+        view.chain(&exported).expect("导出口有链").len(),
+        2,
+        "Seat 一节加 Collective 一节"
+    );
 
     // Collective 的输入只交给 Signature 所在的门；审计者用自己那份。
     let gate_in = k.index().journal(&gate_member).unwrap().birth()["input"].clone();
@@ -331,11 +341,7 @@ fn a_charter_is_instantiated_with_its_members_in_one_event() {
     match view.provider(&handle) {
         Some(Provider::Provided { instance, port }) => {
             assert_eq!(port, "pass");
-            assert_eq!(
-                instance,
-                gate_member.clone(),
-                "指向占 gate 的那个成员"
-            );
+            assert_eq!(instance, gate_member.clone(), "指向占 gate 的那个成员");
         }
         other => panic!("应当指向门，得到 {other:?}"),
     }
@@ -353,8 +359,18 @@ fn a_charter_is_instantiated_with_its_members_in_one_event() {
         .unwrap()
         .unwrap();
     assert_eq!(sent["outcome"]["ok"], true, "经导出口交出：{sent}");
-    let last = k.index().journal(&gate_member).unwrap().records.last().unwrap().clone();
-    assert_eq!(last["what"]["arrival"]["port"], "pass", "到达落在门那里：{last}");
+    let last = k
+        .index()
+        .journal(&gate_member)
+        .unwrap()
+        .records
+        .last()
+        .unwrap()
+        .clone();
+    assert_eq!(
+        last["what"]["arrival"]["port"], "pass",
+        "到达落在门那里：{last}"
+    );
     assert_eq!(last["what"]["arrival"]["sender"], json!(r), "交出的是 root");
 
     // 带 Seat 路径的 Look：经 Collective 的 Look 落到成员；路径上没有的 Seat 是 denied。
@@ -371,17 +387,31 @@ fn a_charter_is_instantiated_with_its_members_in_one_event() {
         .unwrap()
         .unwrap()
     };
-    let seen = look_at(&mut k, "lookgate", json!({"op": "read", "seat": "gate", "from": 0, "limit": 1}));
+    let seen = look_at(
+        &mut k,
+        "lookgate",
+        json!({"op": "read", "seat": "gate", "from": 0, "limit": 1}),
+    );
     assert_eq!(seen["outcome"]["ok"], true, "{seen}");
     assert_eq!(
         seen["outcome"]["value"]["records"][0]["what"]["birth"]["seat"], "gate",
         "读到的是门的 Journal：{seen}"
     );
-    let whole = look_at(&mut k, "lookself", json!({"op": "read", "from": 0, "limit": 1}));
+    let whole = look_at(
+        &mut k,
+        "lookself",
+        json!({"op": "read", "from": 0, "limit": 1}),
+    );
     assert!(
-        whole["outcome"]["value"]["records"][0]["what"]["birth"].get("staffing").is_some(),
+        whole["outcome"]["value"]["records"][0]["what"]["birth"]
+            .get("staffing")
+            .is_some(),
         "不带路径读的是 Collective 自己：{whole}"
     );
-    let missing = look_at(&mut k, "looknobody", json!({"op": "inspect", "seat": "nobody"}));
+    let missing = look_at(
+        &mut k,
+        "looknobody",
+        json!({"op": "inspect", "seat": "nobody"}),
+    );
     assert_eq!(missing["outcome"]["error"]["kind"], "denied", "{missing}");
 }

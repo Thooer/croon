@@ -73,16 +73,17 @@ fn deref(v: &Json) -> Option<Json> {
 
 fn branches(schema: &Json) -> Vec<Json> {
     match schema.get("anyOf").and_then(Json::as_array) {
-        Some(a) => a.iter().map(|b| deref(b).unwrap_or_else(|| b.clone())).collect(),
+        Some(a) => a
+            .iter()
+            .map(|b| deref(b).unwrap_or_else(|| b.clone()))
+            .collect(),
         None => vec![deref(schema).unwrap_or_else(|| schema.clone())],
     }
 }
 
 fn in_narrows(a: &Json, b: &Json) -> bool {
     let b = branches(b);
-    branches(a)
-        .iter()
-        .all(|x| b.iter().any(|y| same(x, y)))
+    branches(a).iter().all(|x| b.iter().any(|y| same(x, y)))
 }
 
 fn attach_narrows(a: &Json, b: &Json) -> bool {
@@ -178,9 +179,13 @@ mod tests {
 
     #[test]
     fn dropping_a_name_from_the_attach_is_a_narrowing_but_adding_one_is_not() {
-        let one = json!({"properties": {"to": true}, "required": ["to"], "additionalProperties": false});
+        let one =
+            json!({"properties": {"to": true}, "required": ["to"], "additionalProperties": false});
         let two = json!({"properties": {"to": true, "extra": true}, "additionalProperties": false});
-        assert!(narrows(&port(json!({}), one.clone()), &port(json!({}), two.clone())));
+        assert!(narrows(
+            &port(json!({}), one.clone()),
+            &port(json!({}), two.clone())
+        ));
         assert!(!narrows(&port(json!({}), two), &port(json!({}), one)));
     }
 

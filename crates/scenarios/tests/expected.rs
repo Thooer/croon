@@ -264,22 +264,25 @@ fn values_and_results_fit_the_port_specs_they_pass() {
                             let collective = birth["collective"].as_str().unwrap();
                             let seat = birth["seat"].as_str().unwrap();
                             let charter_birth = body(&journals[collective][0]);
-                            let charter = &values[charter_birth["definition"].as_str().unwrap()]
-                                ["$bundle"];
-                            let source = charter["wire"][seat]
-                                .get(port)
-                                .unwrap_or_else(|| {
-                                    panic!("{name} {instance}：Charter 没写 {seat} 的 {port}")
-                                });
-                            let found = if let Some(outer) = source.get("outer").and_then(|s| s.as_str())
+                            let charter =
+                                &values[charter_birth["definition"].as_str().unwrap()]["$bundle"];
+                            let source = charter["wire"][seat].get(port).unwrap_or_else(|| {
+                                panic!("{name} {instance}：Charter 没写 {seat} 的 {port}")
+                            });
+                            let found = if let Some(outer) =
+                                source.get("outer").and_then(|s| s.as_str())
                             {
                                 charter["interface"]["requires"].get(outer).is_some()
-                            } else if let Some(other) = source.get("seat").and_then(|s| s.as_str()) {
-                                source.get("port").and_then(|p| p.as_str()).is_some_and(|p| {
-                                    charter["seats"][other]["interface"]["provides"]
-                                        .get(p)
-                                        .is_some()
-                                })
+                            } else if let Some(other) = source.get("seat").and_then(|s| s.as_str())
+                            {
+                                source
+                                    .get("port")
+                                    .and_then(|p| p.as_str())
+                                    .is_some_and(|p| {
+                                        charter["seats"][other]["interface"]["provides"]
+                                            .get(p)
+                                            .is_some()
+                                    })
                             } else if let Some(own) = source.get("self").and_then(|s| s.as_str()) {
                                 charter["seats"][seat]["interface"]["provides"]
                                     .get(own)

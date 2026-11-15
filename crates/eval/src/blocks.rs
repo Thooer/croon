@@ -14,10 +14,34 @@ pub struct Block {
 }
 
 pub static BLOCKS: &[Block] = &[
-    Block { name: "definition.schema", lang: "json", text: include_str!("../schema/definition.schema.json"), file: "crates/eval/schema/definition.schema.json", line: 0 },
-    Block { name: "value.bundle", lang: "json", text: include_str!("../schema/value.bundle.json"), file: "crates/eval/schema/value.bundle.json", line: 0 },
-    Block { name: "value.limits", lang: "json", text: include_str!("../schema/value.limits.json"), file: "crates/eval/schema/value.limits.json", line: 0 },
-    Block { name: "value.schema", lang: "json", text: include_str!("../schema/value.schema.json"), file: "crates/eval/schema/value.schema.json", line: 0 },
+    Block {
+        name: "definition.schema",
+        lang: "json",
+        text: include_str!("../schema/definition.schema.json"),
+        file: "crates/eval/schema/definition.schema.json",
+        line: 0,
+    },
+    Block {
+        name: "value.bundle",
+        lang: "json",
+        text: include_str!("../schema/value.bundle.json"),
+        file: "crates/eval/schema/value.bundle.json",
+        line: 0,
+    },
+    Block {
+        name: "value.limits",
+        lang: "json",
+        text: include_str!("../schema/value.limits.json"),
+        file: "crates/eval/schema/value.limits.json",
+        line: 0,
+    },
+    Block {
+        name: "value.schema",
+        lang: "json",
+        text: include_str!("../schema/value.schema.json"),
+        file: "crates/eval/schema/value.schema.json",
+        line: 0,
+    },
 ];
 
 pub fn get(name: &str) -> &'static Block {

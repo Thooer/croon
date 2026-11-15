@@ -157,8 +157,10 @@ impl Index {
                     match body.get("collective").and_then(Json::as_str) {
                         Some(collective) => {
                             let seat = body["seat"].as_str().unwrap_or_default();
-                            self.members
-                                .insert((collective.to_owned(), seat.to_owned()), instance.to_owned());
+                            self.members.insert(
+                                (collective.to_owned(), seat.to_owned()),
+                                instance.to_owned(),
+                            );
                         }
                         None => {
                             self.born_by.insert(event.to_owned(), instance.to_owned());
@@ -457,7 +459,10 @@ impl View<'_> {
                 if let Some(port) = name.strip_prefix("port/")
                     && let Some((member, p)) = self.exported(born, port)
                 {
-                    return Some(Provider::Provided { instance: member, port: p });
+                    return Some(Provider::Provided {
+                        instance: member,
+                        port: p,
+                    });
                 }
                 Self::result_provider(born, name)
             }
@@ -508,7 +513,9 @@ impl View<'_> {
         let seat = birth["seat"].as_str()?;
         let source = charter["wire"].get(seat)?.get(port)?;
         if let Some(outer) = source.get("outer").and_then(Json::as_str) {
-            let handle = self.ix.journal(collective)?.birth()["wire"].get(outer)?.as_str()?;
+            let handle = self.ix.journal(collective)?.birth()["wire"]
+                .get(outer)?
+                .as_str()?;
             return self.provider(handle);
         }
         if let Some(p) = source.get("self").and_then(Json::as_str) {
@@ -667,7 +674,9 @@ impl View<'_> {
         let seat = member["seat"].as_str()?;
         let source = charter["wire"].get(seat)?.get(port)?;
         if let Some(outer) = source.get("outer").and_then(Json::as_str) {
-            let handle = self.ix.journal(collective)?.birth()["wire"].get(outer)?.as_str()?;
+            let handle = self.ix.journal(collective)?.birth()["wire"]
+                .get(outer)?
+                .as_str()?;
             return self.chain(handle);
         }
         let node = match source.get("self").and_then(Json::as_str) {
@@ -1156,7 +1165,8 @@ mod tests {
         };
         let run = json!({"description": "跑", "in": {"type": "null"}, "attach": {"additionalProperties": false}});
         let back = json!({"description": "回", "in": {"type": "null"}, "attach": {"additionalProperties": false}});
-        let sees = json!({"description": "看", "in": {}, "attach": {"additionalProperties": false}});
+        let sees =
+            json!({"description": "看", "in": {}, "attach": {"additionalProperties": false}});
         let charter_def = json!({
             "interface": {"description": "集体", "signature": {"in": {}, "out": {}}, "provides": {}, "requires": {"run": sees}},
             "seats": {
@@ -1239,7 +1249,12 @@ mod tests {
             };
             for iface in ifaces {
                 for port in ["provides", "requires"] {
-                    for spec in iface[port].as_object().into_iter().flatten().map(|(_, s)| s) {
+                    for spec in iface[port]
+                        .as_object()
+                        .into_iter()
+                        .flatten()
+                        .map(|(_, s)| s)
+                    {
                         store.put_json(spec).unwrap();
                     }
                 }
