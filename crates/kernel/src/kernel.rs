@@ -264,7 +264,7 @@ impl Kernel {
         &self.journal
     }
 
-    pub fn store(&self) -> &ContentStore {
+    pub fn store(&self) -> &Rc<ContentStore> {
         &self.store
     }
 
