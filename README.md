@@ -21,6 +21,6 @@ Kernel 不预设智能体、模型或工具。模型、文件执行、Language �
 
 本仓库是独立 Cargo workspace。Kernel 的构建与测试只使用本仓库的 crates 和依赖，不要求上层仓库参与。代码中使用的 JSON 形状以各 crate 的 `schema/` 文件为出处，并由代码直接编译进来。
 
-公开面是 `croon-eval`、`croon-port` 与 `croon-tree` 三个 crate；上层生产代码只依赖它们，只有测试才装得了 `kernel`。每个 crate 的 `//!` 头部写着实现它之前必须知道的义务，那是那些义务的唯一出处。
+公开面是 `croon-eval`、`croon-port` 与 `croon-tree` 三个 crate；提供者与 Language 只依赖它们。`kernel` 是运行时，不是契约：装配系统的宿主依赖它，提供者不依赖它。每个 crate 的 `//!` 头部写着实现它之前必须知道的义务，那是那些义务的唯一出处。
 
 文档入口是 `docs/README.md`。系统设计在 `docs/Kernel/README.md`，Value、Definition、Instance、Journal、Reference 与 Port 分别从对应文件进入。
