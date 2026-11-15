@@ -93,7 +93,7 @@ Kernel 是组合的基座，兼容是设计的一部分：别的 Agent 框架有
 | 方向 | 是谁 | 经什么接口 |
 |---|---|---|
 | 上游 | 无。本仓库只依赖第三方库 | |
-| 公开给下游 | 三个 crate：`croon-eval`（Value、Schema、Bundle、求值契约）、`croon-port`（效果契约、内容存储、Kernel 的 Port spec）、`croon-tree`（Tree 形状与纯校验） | 下游按 Cargo 的 path 依赖取用，不读本仓库的 docs 作为规格。`kernel` 不在公开面内 |
+| 公开给下游 | 三个 crate：`croon-eval`（Value、Schema、Bundle、求值契约）、`croon-port`（效果契约、内容存储、Kernel 的 Port spec）、`croon-tree`（Tree 形状与纯校验） | 下游按 Cargo 的 path 依赖取用，不读本仓库的 docs 作为规格。`kernel` 是运行时，下游的宿主经它装配系统，宿主的义务写在它的 crate 头部 |
 | 下游 | `croon-lang0`（lang0@1 求值器）、`croon-app`（Directory、Execution、Library、Application） | 本仓库不为它们留接口，也不引用它们的文档 |
 
 - `croon-tree` 与 Kernel 并列，Kernel 侧三个 crate 都不依赖它。`kernel` 是运行时，不作为契约给下游：下游的宿主可以装它来运行系统，提供者与 Language 不依赖它。

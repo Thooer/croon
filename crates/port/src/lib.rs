@@ -8,11 +8,14 @@
 //!   按 Journal 收尾。同一个 attempt 可能被退役多次，也可能在 `start` 没走到时就要退役。
 //! - [`Execution::collect`] 返回 `None` 表示还在跑，Kernel 用同一个键反复调用；返回 `Some` 之后
 //!   不再调用。outcome 要满足 `definition.outcome`，它的 dependencies 必须落在本次交付的范围内。
-//! - 返回 [`HostError`] 是宿主故障，不是 body 失败：Kernel 停下这次执行，Journal 不写业务结果。
+//! - 返回 [`HostError`] 是宿主故障，不是 body 失败：Kernel 停下这个 Instance，Journal 不写业务结果，
+//!   等宿主修好后重开。只有修宿主就能修好的才返回它；另一侧报告的失败（同样的请求重做也不会更好，
+//!   或要不要重试是调用方的策略）写成 `ok: false`、kind 为 `use` 的 outcome。
 //! - 不带超时的请求合法；Kernel 不为长请求设统一上限。
 //!
 //! 义务以上面这几条为准，docs 不复述。理由：通道与收尾见 `docs/Kernel/Reference.md`「通道」；
-//! attempt 的接受、回收与重做见 `docs/Kernel/Instance.md`「执行」；端口表本身见 `docs/Kernel/Port.md`。
+//! attempt 的接受、回收与重做见 `docs/Kernel/Instance.md`「执行」；
+//! 两类失败怎样分见 `docs/Kernel/Instance.md`「宿主故障与失败」；端口表本身见 `docs/Kernel/Port.md`。
 
 pub mod blocks;
 pub mod host;

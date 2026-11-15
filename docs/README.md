@@ -71,6 +71,9 @@ P 委托 Individual A，A 使用两套上下文、两个模型，又委托 B。A
 | 宿主代码、可信由谁承担 | Kernel/Plugin.md |
 | 跨部分的实现选择与理由 | Kernel/Engineering.md；绑某一部分的在那一部分的「实现」一节 |
 | 某个场景应当跑出什么 Journal | Kernel/Scenarios/；格式、脚手架与扰动见那里的 README.md；内容交付场景使用 Bundle |
+| 我在写一个宿主 Port（模型、文件执行等），要守什么 | `croon-port` 的 crate 头部；Kernel/Reference.md 的「通道」；Kernel/Instance.md 的「宿主故障与失败」 |
+| 我在写一种 Language，要守什么 | `croon-eval` 的 crate 头部；Kernel/Definition/Cognition.md 的「求值契约」；Kernel/Language.md |
+| 我在写宿主：怎样装起一个系统、驱动 root entry、处置宿主故障 | `kernel` 的 crate 头部，最小的宿主见 crates/kernel/tests/host.rs；Kernel/Port.md 的「根绑定」；Kernel/Instance.md 的「执行」与「宿主故障与失败」 |
 | 证据、先例、借鉴的判据 | Research/；那里的内容待核验，只作线索 |
 | 打算怎么做、下一步做什么 | Plan.md；全文按待定读 |
 
