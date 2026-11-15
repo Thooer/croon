@@ -12,7 +12,7 @@ Croon 是什么、讨论与写作的规则，见仓库根的 README 与 AGENTS�
 - **Instance**：可变状态的主人，每次变化由它自己的 Journal 解释。
 - **Reference**：唯一的权利，由 Kernel、别的 Instance 或外部服务提供。
 
-Definition、Bundle、Schema 与 Port spec 是 Value 的形状；Journal 保存 Instance 的事实。Language 的求值器与 Plugin 由根装；Directory、Model 与 Library 在 Kernel 之外，是提供者一侧的领域规格。通用 Kernel 与智能体用例的边界见 Kernel/README.md 的「制度机」，实现分离的任务见 Plan.md 的「内核分离」。
+Definition、Bundle、Schema 与 Port spec 是 Value 的形状；Journal 保存 Instance 的事实。Language 的求值器与 Plugin 由根装；Directory、Model 与 Library 在 Kernel 之外，是提供者一侧的领域规格。通用 Kernel 与智能体用例的边界见 Kernel/README.md 的「制度机」。
 
 | 部分 | 承担 | 依赖 |
 |---|---|---|
@@ -56,10 +56,10 @@ P 委托 Individual A，A 使用两套上下文、两个模型，又委托 B。A
 
 | 想问什么 | 读哪里 |
 |---|---|
-| Croon 是什么、现在做到哪了 | 仓库根的 README.md；进度与下一步见 docs/Plan.md |
+| Croon 是什么、现在做到哪了 | 仓库根的 README.md 的「状态」；未实现的部分在各部分的「待定」 |
 | 系统由哪些部分构成、依赖什么 | 本文的「骨架」；上层各部分的文档在各自的仓库 |
 | 一个概念在正文里叫什么，几种名称是什么关系 | 本文的「名词表」与「分类与关系」 |
-| 制度机、零环境特权、测试与生态边界是什么，内核怎样分离 | Kernel/README.md 的「制度机」；实施步骤与验收见 Plan.md 的「内核分离」 |
+| 制度机、零环境特权、测试与生态边界是什么 | Kernel/README.md 的「制度机」 |
 | Kernel 保证什么、一样机制该放在哪 | Kernel/README.md 的「保证」「放置」；同一文件里的「前提」写作法要照顾的引擎特性 |
 | 某一种能力组合得出来吗 | Kernel/README.md 的「运作方式」与「场景」 |
 | 根、Entry、系统边界是什么 | Kernel/README.md 的「根」与「待定」 |
@@ -75,7 +75,6 @@ P 委托 Individual A，A 使用两套上下文、两个模型，又委托 B。A
 | 我在写一种 Language，要守什么 | `croon-eval` 的 crate 头部；Kernel/Definition/Cognition.md 的「求值契约」；Kernel/Language.md |
 | 我在写宿主：怎样装起一个系统、驱动 root entry、处置宿主故障 | `kernel` 的 crate 头部，最小的宿主见 crates/kernel/tests/host.rs；Kernel/Port.md 的「根绑定」；Kernel/Instance.md 的「执行」与「宿主故障与失败」 |
 | 证据、先例、借鉴的判据 | Research/；那里的内容待核验，只作线索 |
-| 打算怎么做、下一步做什么 | Plan.md；全文按待定读 |
 
 回归集是 Kernel/README.md 的场景表：删改 Kernel 之后重新走一遍。子文件夹的 README.md 只写这一部分讲什么，不再列读法。
 

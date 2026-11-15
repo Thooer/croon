@@ -115,7 +115,7 @@ Charter 承诺的是接线与写死的规则，不承诺成员的状态。成员
 
 | 何时 | 查什么 |
 |---|---|
-| 构造 | 至少两个 Seat；每个 Required port 恰好接一种来源，形状兼容（接收方的声明是来源的收窄）；导出的形状兼容（Collective 的不比那个 Seat 的宽）；写死的 Definition 满足它的 Seat；没有成员接上自己 Seat 的 Correct；Seat 里的 Definition 可以是 Charter，按内容寻址，所以没有环 |
+| 构造 | 至少两个 Seat；每个 Required port 恰好接一种来源，形状兼容（接收方的声明是来源的收窄）；导出的形状兼容（Collective 的不比那个 Seat 的宽）；写死的 Definition 满足它的 Seat（尚未实现：要读闭包；实例化时已查占座的与 Seat 的 Interface 相同）；没有成员接上自己 Seat 的 Correct；Seat 里的 Definition 可以是 Charter，按内容寻址，所以没有环 |
 | 实例化 | 人选覆盖每个没有写死的 Seat，占座的 Definition 与 Seat 的 Interface 相同；Collective 的 Required port 都接上了 |
 | 运行中 | 每次交出照常按 Port 查；授予、收回与失效按「刚性」改变接线，成员固定 |
 

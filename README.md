@@ -15,7 +15,7 @@ Kernel 不预设智能体、模型或工具。模型、文件执行、Language �
 
 ## 状态
 
-设计验证与实现收敛中。当前重点是持久执行、显式 Bundle 交付、授权边界、恢复和 Kernel 与提供者的分离；Charter 的完整构造与实例化仍在后续实现范围内。
+设计验证与实现收敛中。当前重点是持久执行、显式 Bundle 交付、授权边界、恢复和 Kernel 与提供者的分离；Charter 已能实例化，Collective 与成员在一次事件里诞生；构造时「写死的 Definition 满足它的 Seat」、终止闭环与对 Collective 的 Correct 尚未实现，见 Definition 的「检查」与 Instance 的「待定」。
 
 ## 开发
 
