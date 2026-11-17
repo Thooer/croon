@@ -5,328 +5,13 @@
         "evaluator": "external",
         "interface": {
           "description": "同形不同目标",
-          "signature": {
-            "in": {},
-            "out": {}
-          },
-          "provides": {
-            "done": {
-              "description": "收结束状态",
-              "in": {
-                "anyOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "ok": {
-                        "enum": [
-                          true
-                        ]
-                      },
-                      "value": {},
-                      "dependencies": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "description": "Bundle ID"
-                        },
-                        "description": "显式依赖根的集合；ID 排序、无重复"
-                      }
-                    },
-                    "required": [
-                      "ok",
-                      "value",
-                      "dependencies"
-                    ],
-                    "additionalProperties": false
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "ok": {
-                        "enum": [
-                          false
-                        ]
-                      },
-                      "error": {
-                        "type": "object",
-                        "properties": {
-                          "kind": {
-                            "type": "string",
-                            "description": "契约层的 use、denied、type、terminated，或 Language 定义的"
-                          },
-                          "message": {
-                            "type": "string"
-                          },
-                          "data": {}
-                        },
-                        "required": [
-                          "kind",
-                          "message",
-                          "data"
-                        ],
-                        "additionalProperties": false
-                      },
-                      "dependencies": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "description": "Bundle ID"
-                        },
-                        "description": "显式依赖根的集合；ID 排序、无重复"
-                      }
-                    },
-                    "required": [
-                      "ok",
-                      "error",
-                      "dependencies"
-                    ],
-                    "additionalProperties": false
-                  }
-                ]
-              },
-              "attach": {
-                "additionalProperties": false
-              }
-            }
-          },
+          "signature": {"in": {},"out": {}},
+          "provides": {"done": {"$block": "scenario.reconnect#/values/sha256:psdone"}},
           "requires": {
-            "make": {
-              "description": "检查完整 Definition Bundle；成功事实属于该对象",
-              "in": {
-                "type": "object",
-                "properties": {
-                  "definition": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "definition"
-                ],
-                "additionalProperties": false
-              },
-              "attach": {
-                "additionalProperties": false
-              },
-              "out": {
-                "value": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "id"
-                  ],
-                  "additionalProperties": false
-                },
-                "attach": {
-                  "additionalProperties": false
-                }
-              }
-            },
-            "check": {
-              "description": "检查完整 Definition Bundle；成功事实属于该对象",
-              "in": {
-                "type": "object",
-                "properties": {
-                  "definition": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "definition"
-                ],
-                "additionalProperties": false
-              },
-              "attach": {
-                "additionalProperties": false
-              },
-              "out": {
-                "value": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "id"
-                  ],
-                  "additionalProperties": false
-                },
-                "attach": {
-                  "additionalProperties": false
-                }
-              }
-            },
-            "spawn": {
-              "description": "实例化已构造的 Definition，输入依赖来自本次交付；Required port 从附带或 self 接上",
-              "in": {
-                "type": "object",
-                "properties": {
-                  "definition": {
-                    "type": "string"
-                  },
-                  "input": {
-                    "type": "object",
-                    "properties": {
-                      "value": {},
-                      "dependencies": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "description": "Bundle ID"
-                        },
-                        "description": "显式依赖根的集合；ID 排序、无重复"
-                      }
-                    },
-                    "required": [
-                      "value",
-                      "dependencies"
-                    ],
-                    "additionalProperties": false
-                  },
-                  "seats": {
-                    "type": "object",
-                    "additionalProperties": {
-                      "type": "object",
-                      "properties": {
-                        "definition": {
-                          "type": "string"
-                        },
-                        "input": {
-                          "type": "object",
-                          "properties": {
-                            "value": {},
-                            "dependencies": {
-                              "type": "array",
-                              "items": {
-                                "type": "string",
-                                "description": "Bundle ID"
-                              },
-                              "description": "显式依赖根的集合；ID 排序、无重复"
-                            }
-                          },
-                          "required": [
-                            "value",
-                            "dependencies"
-                          ],
-                          "additionalProperties": false
-                        }
-                      },
-                      "required": [
-                        "definition"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "self": {
-                    "type": "object",
-                    "additionalProperties": {
-                      "type": "string"
-                    },
-                    "description": "Required port → port/<自己Provided port> 或 look"
-                  }
-                },
-                "required": [
-                  "definition",
-                  "input",
-                  "seats",
-                  "self"
-                ],
-                "additionalProperties": false
-              },
-              "attach": {
-                "additionalProperties": true
-              },
-              "out": {
-                "value": {
-                  "type": "null"
-                },
-                "attach": {
-                  "additionalProperties": true
-                }
-              }
-            },
-            "back": {
-              "description": "收结束状态",
-              "in": {
-                "anyOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "ok": {
-                        "enum": [
-                          true
-                        ]
-                      },
-                      "value": {},
-                      "dependencies": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "description": "Bundle ID"
-                        },
-                        "description": "显式依赖根的集合；ID 排序、无重复"
-                      }
-                    },
-                    "required": [
-                      "ok",
-                      "value",
-                      "dependencies"
-                    ],
-                    "additionalProperties": false
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "ok": {
-                        "enum": [
-                          false
-                        ]
-                      },
-                      "error": {
-                        "type": "object",
-                        "properties": {
-                          "kind": {
-                            "type": "string",
-                            "description": "契约层的 use、denied、type、terminated，或 Language 定义的"
-                          },
-                          "message": {
-                            "type": "string"
-                          },
-                          "data": {}
-                        },
-                        "required": [
-                          "kind",
-                          "message",
-                          "data"
-                        ],
-                        "additionalProperties": false
-                      },
-                      "dependencies": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "description": "Bundle ID"
-                        },
-                        "description": "显式依赖根的集合；ID 排序、无重复"
-                      }
-                    },
-                    "required": [
-                      "ok",
-                      "error",
-                      "dependencies"
-                    ],
-                    "additionalProperties": false
-                  }
-                ]
-              },
-              "attach": {
-                "additionalProperties": false
-              }
-            }
+            "make": {"$block": "reference.kernel#/construct"},
+            "check": {"$block": "reference.kernel#/construct"},
+            "spawn": {"$block": "reference.kernel#/instantiate"},
+            "back": {"$block": "scenario.reconnect#/values/sha256:psdone"}
           }
         }
       },
@@ -337,456 +22,31 @@
         "language": "fake@1",
         "interface": {
           "description": "binding",
-          "signature": {
-            "in": {
-              "type": "object",
-              "properties": {
-                "a": {},
-                "b": {}
-              },
-              "required": [
-                "a",
-                "b"
-              ],
-              "additionalProperties": false
-            },
-            "out": {}
-          },
+          "signature": {"in": {"type": "object","properties": {"a": {},"b": {}},"required": ["a","b"],"additionalProperties": false},"out": {}},
           "provides": {},
-          "requires": {
-            "make": {
-              "description": "检查完整 Definition Bundle；成功事实属于该对象",
-              "in": {
-                "type": "object",
-                "properties": {
-                  "definition": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "definition"
-                ],
-                "additionalProperties": false
-              },
-              "attach": {
-                "additionalProperties": false
-              },
-              "out": {
-                "value": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "id"
-                  ],
-                  "additionalProperties": false
-                },
-                "attach": {
-                  "additionalProperties": false
-                }
-              }
-            },
-            "check": {
-              "description": "检查完整 Definition Bundle；成功事实属于该对象",
-              "in": {
-                "type": "object",
-                "properties": {
-                  "definition": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "definition"
-                ],
-                "additionalProperties": false
-              },
-              "attach": {
-                "additionalProperties": false
-              },
-              "out": {
-                "value": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "id"
-                  ],
-                  "additionalProperties": false
-                },
-                "attach": {
-                  "additionalProperties": false
-                }
-              }
-            },
-            "spawn": {
-              "description": "实例化已构造的 Definition，输入依赖来自本次交付；Required port 从附带或 self 接上",
-              "in": {
-                "type": "object",
-                "properties": {
-                  "definition": {
-                    "type": "string"
-                  },
-                  "input": {
-                    "type": "object",
-                    "properties": {
-                      "value": {},
-                      "dependencies": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "description": "Bundle ID"
-                        },
-                        "description": "显式依赖根的集合；ID 排序、无重复"
-                      }
-                    },
-                    "required": [
-                      "value",
-                      "dependencies"
-                    ],
-                    "additionalProperties": false
-                  },
-                  "seats": {
-                    "type": "object",
-                    "additionalProperties": {
-                      "type": "object",
-                      "properties": {
-                        "definition": {
-                          "type": "string"
-                        },
-                        "input": {
-                          "type": "object",
-                          "properties": {
-                            "value": {},
-                            "dependencies": {
-                              "type": "array",
-                              "items": {
-                                "type": "string",
-                                "description": "Bundle ID"
-                              },
-                              "description": "显式依赖根的集合；ID 排序、无重复"
-                            }
-                          },
-                          "required": [
-                            "value",
-                            "dependencies"
-                          ],
-                          "additionalProperties": false
-                        }
-                      },
-                      "required": [
-                        "definition"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "self": {
-                    "type": "object",
-                    "additionalProperties": {
-                      "type": "string"
-                    },
-                    "description": "Required port → port/<自己Provided port> 或 look"
-                  }
-                },
-                "required": [
-                  "definition",
-                  "input",
-                  "seats",
-                  "self"
-                ],
-                "additionalProperties": false
-              },
-              "attach": {
-                "additionalProperties": true
-              },
-              "out": {
-                "value": {
-                  "type": "null"
-                },
-                "attach": {
-                  "additionalProperties": true
-                }
-              }
-            },
-            "journal": {
-              "description": "读取目标状态或 Journal；Handle 只是信息，依赖按被读位置实际取得的范围交付",
-              "in": {
-                "anyOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "op": {
-                        "enum": [
-                          "inspect"
-                        ]
-                      },
-                      "seat": {
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "op"
-                    ],
-                    "additionalProperties": false
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "op": {
-                        "enum": [
-                          "read"
-                        ]
-                      },
-                      "seat": {
-                        "type": "string"
-                      },
-                      "from": {
-                        "type": "integer"
-                      },
-                      "limit": {
-                        "type": "integer"
-                      }
-                    },
-                    "required": [
-                      "op"
-                    ],
-                    "additionalProperties": false
-                  }
-                ]
-              },
-              "attach": {
-                "additionalProperties": false
-              },
-              "out": {
-                "value": {},
-                "attach": {
-                  "additionalProperties": false
-                }
-              }
-            }
-          }
+          "requires": {"make": {"$block": "reference.kernel#/construct"},"check": {"$block": "reference.kernel#/construct"},"spawn": {"$block": "reference.kernel#/instantiate"},"journal": {"$block": "reference.kernel#/look"}}
         },
         "body": "binding"
       },
       "dependencies": []
     },
-    "sha256:bindinga": {
-      "$bundle": {
-        "language": "fake@1",
-        "interface": {
-          "description": "A",
-          "signature": {
-            "in": {},
-            "out": {}
-          },
-          "provides": {},
-          "requires": {}
-        },
-        "body": "A"
-      },
-      "dependencies": []
-    },
-    "sha256:bindingb": {
-      "$bundle": {
-        "language": "fake@1",
-        "interface": {
-          "description": "B",
-          "signature": {
-            "in": {},
-            "out": {}
-          },
-          "provides": {},
-          "requires": {}
-        },
-        "body": "B"
-      },
-      "dependencies": []
-    },
-    "sha256:bindingsource": {
-      "description": "来源的描述与 Required port 不同",
-      "in": {
-        "type": "object",
-        "properties": {
-          "definition": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "definition"
-        ],
-        "additionalProperties": false
-      },
-      "attach": {
-        "additionalProperties": false
-      },
-      "out": {
-        "value": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "id"
-          ],
-          "additionalProperties": false
-        },
-        "attach": {
-          "additionalProperties": false
-        }
-      }
-    },
-    "sha256:bindinginstantiate": {
-      "description": "实例化已构造的 Definition，输入依赖来自本次交付；Required port 从附带或 self 接上",
-      "in": {
-        "type": "object",
-        "properties": {
-          "definition": {
-            "type": "string"
-          },
-          "input": {
-            "type": "object",
-            "properties": {
-              "value": {},
-              "dependencies": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "description": "Bundle ID"
-                },
-                "description": "显式依赖根的集合；ID 排序、无重复"
-              }
-            },
-            "required": [
-              "value",
-              "dependencies"
-            ],
-            "additionalProperties": false
-          },
-          "seats": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "object",
-              "properties": {
-                "definition": {
-                  "type": "string"
-                },
-                "input": {
-                  "type": "object",
-                  "properties": {
-                    "value": {},
-                    "dependencies": {
-                      "type": "array",
-                      "items": {
-                        "type": "string",
-                        "description": "Bundle ID"
-                      },
-                      "description": "显式依赖根的集合；ID 排序、无重复"
-                    }
-                  },
-                  "required": [
-                    "value",
-                    "dependencies"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "required": [
-                "definition"
-              ],
-              "additionalProperties": false
-            }
-          },
-          "self": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "description": "Required port → port/<自己Provided port> 或 look"
-          }
-        },
-        "required": [
-          "definition",
-          "input",
-          "seats",
-          "self"
-        ],
-        "additionalProperties": false
-      },
-      "attach": {
-        "additionalProperties": true
-      },
-      "out": {
-        "value": {
-          "type": "null"
-        },
-        "attach": {
-          "additionalProperties": true
-        }
-      }
-    },
-    "sha256:bindingchildconstruct": {
-      "definition": "sha256:bindingchild"
-    },
-    "sha256:bindingchildinput": {
-      "a": "sha256:bindinga",
-      "b": "sha256:bindingb"
-    },
+    "sha256:bindinga": {"$bundle": {"language": "fake@1","interface": {"description": "A","signature": {"in": {},"out": {}},"provides": {},"requires": {}},"body": "A"},"dependencies": []},
+    "sha256:bindingb": {"$bundle": {"language": "fake@1","interface": {"description": "B","signature": {"in": {},"out": {}},"provides": {},"requires": {}},"body": "B"},"dependencies": []},
+    "sha256:bindingsource": {"$block": "reference.kernel#/construct","description": "来源的描述与 Required port 不同"},
+    "sha256:bindinginstantiate": {"$block": "reference.kernel#/instantiate"},
+    "sha256:bindingchildconstruct": {"definition": "sha256:bindingchild"},
+    "sha256:bindingchildinput": {"a": "sha256:bindinga","b": "sha256:bindingb"},
     "sha256:bindingchildspawn": {
       "definition": "sha256:bindingchild",
-      "input": {
-        "value": {
-          "a": "sha256:bindinga",
-          "b": "sha256:bindingb"
-        },
-        "dependencies": [
-          "sha256:bindinga",
-          "sha256:bindingb"
-        ]
-      },
+      "input": {"value": {"$block": "scenario.binding#/values/sha256:bindingchildinput"},"dependencies": ["sha256:bindinga","sha256:bindingb"]},
       "seats": {},
-      "self": {
-        "journal": "look"
-      }
+      "self": {"journal": "look"}
     },
-    "sha256:bindingmakea": {
-      "definition": "sha256:bindinga"
-    },
-    "sha256:bindingcheckb": {
-      "definition": "sha256:bindingb"
-    },
-    "sha256:bindingspawna": {
-      "definition": "sha256:bindinga",
-      "input": {
-        "value": null,
-        "dependencies": []
-      },
-      "seats": {},
-      "self": {}
-    },
-    "sha256:bindingspawnb": {
-      "definition": "sha256:bindingb",
-      "input": {
-        "value": null,
-        "dependencies": []
-      },
-      "seats": {},
-      "self": {}
-    },
-    "sha256:bindingout": {
-      "ok": true,
-      "value": {
-        "a": true,
-        "b": "use"
-      },
-      "dependencies": []
-    }
+    "sha256:bindingmakea": {"definition": "sha256:bindinga"},
+    "sha256:bindingcheckb": {"definition": "sha256:bindingb"},
+    "sha256:bindingspawna": {"definition": "sha256:bindinga","input": {"value": null,"dependencies": []},"seats": {},"self": {}},
+    "sha256:bindingspawnb": {"definition": "sha256:bindingb","input": {"value": null,"dependencies": []},"seats": {},"self": {}},
+    "sha256:bindingout": {"ok": true,"value": {"a": true,"b": "use"},"dependencies": []}
   },
   "journals": {
     "i-root": [
@@ -795,195 +55,16 @@
         "what": {
           "birth": {
             "definition": "sha256:bindingroot",
-            "wire": {
-              "make": "h-bindmake",
-              "check": "h-bindcheck",
-              "spawn": "h-bindspawn",
-              "back": "h-bindback"
-            },
-            "self": {
-              "back": "port/done"
-            },
+            "wire": {"make": "h-bindmake","check": "h-bindcheck","spawn": "h-bindspawn","back": "h-bindback"},
+            "self": {"back": "port/done"},
             "binding": {
               "sources": {
-                "make": {
-                  "kernel": "construct",
-                  "spec": {
-                    "description": "来源的描述与 Required port 不同",
-                    "in": {
-                      "type": "object",
-                      "properties": {
-                        "definition": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "definition"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "attach": {
-                      "additionalProperties": false
-                    },
-                    "out": {
-                      "value": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "id"
-                        ],
-                        "additionalProperties": false
-                      },
-                      "attach": {
-                        "additionalProperties": false
-                      }
-                    }
-                  }
-                },
-                "check": {
-                  "host": "fake-check",
-                  "spec": {
-                    "description": "来源的描述与 Required port 不同",
-                    "in": {
-                      "type": "object",
-                      "properties": {
-                        "definition": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "definition"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "attach": {
-                      "additionalProperties": false
-                    },
-                    "out": {
-                      "value": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "id"
-                        ],
-                        "additionalProperties": false
-                      },
-                      "attach": {
-                        "additionalProperties": false
-                      }
-                    }
-                  }
-                },
-                "spawn": {
-                  "kernel": "instantiate",
-                  "spec": {
-                    "description": "实例化已构造的 Definition，输入依赖来自本次交付；Required port 从附带或 self 接上",
-                    "in": {
-                      "type": "object",
-                      "properties": {
-                        "definition": {
-                          "type": "string"
-                        },
-                        "input": {
-                          "type": "object",
-                          "properties": {
-                            "value": {},
-                            "dependencies": {
-                              "type": "array",
-                              "items": {
-                                "type": "string",
-                                "description": "Bundle ID"
-                              },
-                              "description": "显式依赖根的集合；ID 排序、无重复"
-                            }
-                          },
-                          "required": [
-                            "value",
-                            "dependencies"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "seats": {
-                          "type": "object",
-                          "additionalProperties": {
-                            "type": "object",
-                            "properties": {
-                              "definition": {
-                                "type": "string"
-                              },
-                              "input": {
-                                "type": "object",
-                                "properties": {
-                                  "value": {},
-                                  "dependencies": {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "string",
-                                      "description": "Bundle ID"
-                                    },
-                                    "description": "显式依赖根的集合；ID 排序、无重复"
-                                  }
-                                },
-                                "required": [
-                                  "value",
-                                  "dependencies"
-                                ],
-                                "additionalProperties": false
-                              }
-                            },
-                            "required": [
-                              "definition"
-                            ],
-                            "additionalProperties": false
-                          }
-                        },
-                        "self": {
-                          "type": "object",
-                          "additionalProperties": {
-                            "type": "string"
-                          },
-                          "description": "Required port → port/<自己Provided port> 或 look"
-                        }
-                      },
-                      "required": [
-                        "definition",
-                        "input",
-                        "seats",
-                        "self"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "attach": {
-                      "additionalProperties": true
-                    },
-                    "out": {
-                      "value": {
-                        "type": "null"
-                      },
-                      "attach": {
-                        "additionalProperties": true
-                      }
-                    }
-                  }
-                }
+                "make": {"kernel": "construct","spec": {"$block": "scenario.binding#/values/sha256:bindingsource"}},
+                "check": {"host": "fake-check","spec": {"$block": "scenario.binding#/values/sha256:bindingsource"}},
+                "spawn": {"kernel": "instantiate","spec": {"$block": "reference.kernel#/instantiate"}}
               }
             },
-            "input": {
-              "value": "sha256:null",
-              "dependencies": [
-                "sha256:bindingchild",
-                "sha256:bindinga",
-                "sha256:bindingb"
-              ]
-            }
+            "input": {"value": "sha256:null","dependencies": ["sha256:bindingchild","sha256:bindinga","sha256:bindingb"]}
           }
         }
       },
@@ -992,29 +73,11 @@
         "what": {
           "send": {
             "key": "construct",
-            "to": {
-              "port": "make"
-            },
+            "to": {"port": "make"},
             "ref": "h-bindmake",
             "attach": {},
-            "result": {
-              "outcome": {
-                "ok": true,
-                "value": {
-                  "id": "sha256:bindingchild"
-                },
-                "dependencies": []
-              },
-              "attach": {},
-              "derived": {},
-              "accepted": true
-            },
-            "delivery": {
-              "value": "sha256:bindingchildconstruct",
-              "dependencies": [
-                "sha256:bindingchild"
-              ]
-            }
+            "result": {"outcome": {"ok": true,"value": {"id": "sha256:bindingchild"},"dependencies": []},"attach": {},"derived": {},"accepted": true},
+            "delivery": {"value": "sha256:bindingchildconstruct","dependencies": ["sha256:bindingchild"]}
           }
         }
       },
@@ -1023,312 +86,24 @@
         "what": {
           "send": {
             "key": "spawn",
-            "to": {
-              "port": "spawn"
-            },
+            "to": {"port": "spawn"},
             "ref": "h-bindspawn",
-            "attach": {
-              "make": {
-                "to": {
-                  "port": "make"
-                },
-                "ref": "h-bindmake"
-              },
-              "check": {
-                "to": {
-                  "port": "check"
-                },
-                "ref": "h-bindcheck"
-              },
-              "spawn": {
-                "to": {
-                  "port": "spawn"
-                },
-                "ref": "h-bindspawn"
-              }
-            },
+            "attach": {"make": {"to": {"port": "make"},"ref": "h-bindmake"},"check": {"to": {"port": "check"},"ref": "h-bindcheck"},"spawn": {"to": {"port": "spawn"},"ref": "h-bindspawn"}},
             "result": {
-              "outcome": {
-                "ok": true,
-                "value": null,
-                "dependencies": []
-              },
+              "outcome": {"ok": true,"value": null,"dependencies": []},
               "attach": {
-                "look": {
-                  "handle": "h-bindchildlook",
-                  "spec": {
-                    "description": "读取目标状态或 Journal；Handle 只是信息，依赖按被读位置实际取得的范围交付",
-                    "in": {
-                      "anyOf": [
-                        {
-                          "type": "object",
-                          "properties": {
-                            "op": {
-                              "enum": [
-                                "inspect"
-                              ]
-                            },
-                            "seat": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "op"
-                          ],
-                          "additionalProperties": false
-                        },
-                        {
-                          "type": "object",
-                          "properties": {
-                            "op": {
-                              "enum": [
-                                "read"
-                              ]
-                            },
-                            "seat": {
-                              "type": "string"
-                            },
-                            "from": {
-                              "type": "integer"
-                            },
-                            "limit": {
-                              "type": "integer"
-                            }
-                          },
-                          "required": [
-                            "op"
-                          ],
-                          "additionalProperties": false
-                        }
-                      ]
-                    },
-                    "attach": {
-                      "additionalProperties": false
-                    },
-                    "out": {
-                      "value": {},
-                      "attach": {
-                        "additionalProperties": false
-                      }
-                    }
-                  }
-                },
-                "notify": {
-                  "handle": "h-bindchildnotify",
-                  "spec": {
-                    "description": "沿附带的 to 交付一次结束结果；带 seat 时作用在对应成员",
-                    "in": {
-                      "type": "object",
-                      "properties": {
-                        "seat": {
-                          "type": "string"
-                        }
-                      },
-                      "additionalProperties": false
-                    },
-                    "attach": {
-                      "properties": {
-                        "to": true
-                      },
-                      "required": [
-                        "to"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "out": {
-                      "value": {
-                        "type": "null"
-                      },
-                      "attach": {
-                        "additionalProperties": false
-                      }
-                    }
-                  }
-                },
-                "correct": {
-                  "handle": "h-bindchildcorrect",
-                  "spec": {
-                    "description": "纠正目标；Collective 只作用在整体，没有 seat",
-                    "in": {
-                      "anyOf": [
-                        {
-                          "$ref": "#/$defs/pause"
-                        },
-                        {
-                          "$ref": "#/$defs/resume"
-                        },
-                        {
-                          "$ref": "#/$defs/grant"
-                        },
-                        {
-                          "$ref": "#/$defs/withdraw"
-                        }
-                      ],
-                      "$defs": {
-                        "pause": {
-                          "type": "object",
-                          "properties": {
-                            "op": {
-                              "enum": [
-                                "pause"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "op"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "resume": {
-                          "type": "object",
-                          "properties": {
-                            "op": {
-                              "enum": [
-                                "resume"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "op"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "grant": {
-                          "type": "object",
-                          "properties": {
-                            "op": {
-                              "enum": [
-                                "grant"
-                              ]
-                            },
-                            "port": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "op",
-                            "port"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "withdraw": {
-                          "type": "object",
-                          "properties": {
-                            "op": {
-                              "enum": [
-                                "withdraw"
-                              ]
-                            },
-                            "port": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "op",
-                            "port"
-                          ],
-                          "additionalProperties": false
-                        }
-                      }
-                    },
-                    "attach": {
-                      "properties": {
-                        "ref": true
-                      },
-                      "additionalProperties": false
-                    },
-                    "out": {
-                      "value": {
-                        "type": "null"
-                      },
-                      "attach": {
-                        "additionalProperties": false
-                      }
-                    }
-                  }
-                }
+                "look": {"handle": "h-bindchildlook","spec": {"$block": "reference.kernel#/look"}},
+                "notify": {"handle": "h-bindchildnotify","spec": {"$block": "reference.kernel#/notify"}},
+                "correct": {"handle": "h-bindchildcorrect","spec": {"$block": "reference.kernel#/correct"}}
               },
               "derived": {
-                "make": {
-                  "handle": "h-bindchildmake",
-                  "revoker": {
-                    "handle": "h-bindrevokemake",
-                    "spec": {
-                      "description": "沿派生链撤销这次给出的 Reference",
-                      "in": {
-                        "type": "null"
-                      },
-                      "attach": {
-                        "additionalProperties": false
-                      },
-                      "out": {
-                        "value": {
-                          "type": "null"
-                        },
-                        "attach": {
-                          "additionalProperties": false
-                        }
-                      }
-                    }
-                  }
-                },
-                "check": {
-                  "handle": "h-bindchildcheck",
-                  "revoker": {
-                    "handle": "h-bindrevokecheck",
-                    "spec": {
-                      "description": "沿派生链撤销这次给出的 Reference",
-                      "in": {
-                        "type": "null"
-                      },
-                      "attach": {
-                        "additionalProperties": false
-                      },
-                      "out": {
-                        "value": {
-                          "type": "null"
-                        },
-                        "attach": {
-                          "additionalProperties": false
-                        }
-                      }
-                    }
-                  }
-                },
-                "spawn": {
-                  "handle": "h-bindchildspawn",
-                  "revoker": {
-                    "handle": "h-bindrevokespawn",
-                    "spec": {
-                      "description": "沿派生链撤销这次给出的 Reference",
-                      "in": {
-                        "type": "null"
-                      },
-                      "attach": {
-                        "additionalProperties": false
-                      },
-                      "out": {
-                        "value": {
-                          "type": "null"
-                        },
-                        "attach": {
-                          "additionalProperties": false
-                        }
-                      }
-                    }
-                  }
-                }
+                "make": {"handle": "h-bindchildmake","revoker": {"handle": "h-bindrevokemake","spec": {"$block": "reference.kernel#/revoke"}}},
+                "check": {"handle": "h-bindchildcheck","revoker": {"handle": "h-bindrevokecheck","spec": {"$block": "reference.kernel#/revoke"}}},
+                "spawn": {"handle": "h-bindchildspawn","revoker": {"handle": "h-bindrevokespawn","spec": {"$block": "reference.kernel#/revoke"}}}
               },
               "accepted": true
             },
-            "delivery": {
-              "value": "sha256:bindingchildspawn",
-              "dependencies": [
-                "sha256:bindingchild",
-                "sha256:bindinga",
-                "sha256:bindingb"
-              ]
-            }
+            "delivery": {"value": "sha256:bindingchildspawn","dependencies": ["sha256:bindingchild","sha256:bindinga","sha256:bindingb"]}
           }
         },
         "event": "e-bindchild"
@@ -1338,92 +113,21 @@
         "what": {
           "send": {
             "key": "wait",
-            "to": {
-              "handle": "h-bindchildnotify"
-            },
+            "to": {"handle": "h-bindchildnotify"},
             "ref": "h-bindchildnotify",
-            "attach": {
-              "to": {
-                "to": {
-                  "port": "back"
-                },
-                "ref": "h-bindback"
-              }
-            },
+            "attach": {"to": {"to": {"port": "back"},"ref": "h-bindback"}},
             "result": {
-              "outcome": {
-                "ok": true,
-                "value": null,
-                "dependencies": []
-              },
+              "outcome": {"ok": true,"value": null,"dependencies": []},
               "attach": {},
-              "derived": {
-                "to": {
-                  "handle": "h-binddone",
-                  "revoker": {
-                    "handle": "h-binddoneclear",
-                    "spec": {
-                      "description": "沿派生链撤销这次给出的 Reference",
-                      "in": {
-                        "type": "null"
-                      },
-                      "attach": {
-                        "additionalProperties": false
-                      },
-                      "out": {
-                        "value": {
-                          "type": "null"
-                        },
-                        "attach": {
-                          "additionalProperties": false
-                        }
-                      }
-                    }
-                  }
-                }
-              },
+              "derived": {"to": {"handle": "h-binddone","revoker": {"handle": "h-binddoneclear","spec": {"$block": "reference.kernel#/revoke"}}}},
               "accepted": true
             },
-            "delivery": {
-              "value": "sha256:empty",
-              "dependencies": []
-            }
+            "delivery": {"value": "sha256:empty","dependencies": []}
           }
         }
       },
-      {
-        "by": "i-bindingchild",
-        "event": "e-bindend",
-        "what": {
-          "arrival": {
-            "port": "done",
-            "sender": "i-bindingchild",
-            "via": "h-binddone",
-            "attach": {},
-            "delivery": {
-              "value": "sha256:bindingout",
-              "dependencies": []
-            }
-          }
-        }
-      },
-      {
-        "by": "self",
-        "what": {
-          "receive": {
-            "key": "take",
-            "filter": {
-              "ports": [
-                "done"
-              ],
-              "via": [
-                "h-binddone"
-              ]
-            },
-            "result": 4
-          }
-        }
-      }
+      {"by": "i-bindingchild","event": "e-bindend","what": {"arrival": {"port": "done","sender": "i-bindingchild","via": "h-binddone","attach": {},"delivery": {"value": "sha256:bindingout","dependencies": []}}}},
+      {"by": "self","what": {"receive": {"key": "take","filter": {"ports": ["done"],"via": ["h-binddone"]},"result": 4}}}
     ],
     "i-bindingchild": [
       {
@@ -1432,19 +136,8 @@
         "what": {
           "birth": {
             "definition": "sha256:bindingchild",
-            "wire": {
-              "make": "h-bindchildmake",
-              "check": "h-bindchildcheck",
-              "spawn": "h-bindchildspawn",
-              "journal": "h-bindchildjournal"
-            },
-            "input": {
-              "value": "sha256:bindingchildinput",
-              "dependencies": [
-                "sha256:bindinga",
-                "sha256:bindingb"
-              ]
-            }
+            "wire": {"make": "h-bindchildmake","check": "h-bindchildcheck","spawn": "h-bindchildspawn","journal": "h-bindchildjournal"},
+            "input": {"value": "sha256:bindingchildinput","dependencies": ["sha256:bindinga","sha256:bindingb"]}
           }
         }
       },
@@ -1453,29 +146,11 @@
         "what": {
           "send": {
             "key": "make",
-            "to": {
-              "port": "make"
-            },
+            "to": {"port": "make"},
             "ref": "h-bindchildmake",
             "attach": {},
-            "result": {
-              "outcome": {
-                "ok": true,
-                "value": {
-                  "id": "sha256:bindinga"
-                },
-                "dependencies": []
-              },
-              "attach": {},
-              "derived": {},
-              "accepted": true
-            },
-            "delivery": {
-              "value": "sha256:bindingmakea",
-              "dependencies": [
-                "sha256:bindinga"
-              ]
-            }
+            "result": {"outcome": {"ok": true,"value": {"id": "sha256:bindinga"},"dependencies": []},"attach": {},"derived": {},"accepted": true},
+            "delivery": {"value": "sha256:bindingmakea","dependencies": ["sha256:bindinga"]}
           }
         }
       },
@@ -1484,29 +159,11 @@
         "what": {
           "send": {
             "key": "check",
-            "to": {
-              "port": "check"
-            },
+            "to": {"port": "check"},
             "ref": "h-bindchildcheck",
             "attach": {},
-            "result": {
-              "outcome": {
-                "ok": true,
-                "value": {
-                  "id": "sha256:bindingb"
-                },
-                "dependencies": []
-              },
-              "attach": {},
-              "derived": {},
-              "accepted": true
-            },
-            "delivery": {
-              "value": "sha256:bindingcheckb",
-              "dependencies": [
-                "sha256:bindingb"
-              ]
-            }
+            "result": {"outcome": {"ok": true,"value": {"id": "sha256:bindingb"},"dependencies": []},"attach": {},"derived": {},"accepted": true},
+            "delivery": {"value": "sha256:bindingcheckb","dependencies": ["sha256:bindingb"]}
           }
         }
       },
@@ -1515,221 +172,20 @@
         "what": {
           "send": {
             "key": "a",
-            "to": {
-              "port": "spawn"
-            },
+            "to": {"port": "spawn"},
             "ref": "h-bindchildspawn",
             "attach": {},
             "result": {
-              "outcome": {
-                "ok": true,
-                "value": null,
-                "dependencies": []
-              },
+              "outcome": {"ok": true,"value": null,"dependencies": []},
               "attach": {
-                "look": {
-                  "handle": "h-bindalook",
-                  "spec": {
-                    "description": "读取目标状态或 Journal；Handle 只是信息，依赖按被读位置实际取得的范围交付",
-                    "in": {
-                      "anyOf": [
-                        {
-                          "type": "object",
-                          "properties": {
-                            "op": {
-                              "enum": [
-                                "inspect"
-                              ]
-                            },
-                            "seat": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "op"
-                          ],
-                          "additionalProperties": false
-                        },
-                        {
-                          "type": "object",
-                          "properties": {
-                            "op": {
-                              "enum": [
-                                "read"
-                              ]
-                            },
-                            "seat": {
-                              "type": "string"
-                            },
-                            "from": {
-                              "type": "integer"
-                            },
-                            "limit": {
-                              "type": "integer"
-                            }
-                          },
-                          "required": [
-                            "op"
-                          ],
-                          "additionalProperties": false
-                        }
-                      ]
-                    },
-                    "attach": {
-                      "additionalProperties": false
-                    },
-                    "out": {
-                      "value": {},
-                      "attach": {
-                        "additionalProperties": false
-                      }
-                    }
-                  }
-                },
-                "notify": {
-                  "handle": "h-bindanotify",
-                  "spec": {
-                    "description": "沿附带的 to 交付一次结束结果；带 seat 时作用在对应成员",
-                    "in": {
-                      "type": "object",
-                      "properties": {
-                        "seat": {
-                          "type": "string"
-                        }
-                      },
-                      "additionalProperties": false
-                    },
-                    "attach": {
-                      "properties": {
-                        "to": true
-                      },
-                      "required": [
-                        "to"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "out": {
-                      "value": {
-                        "type": "null"
-                      },
-                      "attach": {
-                        "additionalProperties": false
-                      }
-                    }
-                  }
-                },
-                "correct": {
-                  "handle": "h-bindacorrect",
-                  "spec": {
-                    "description": "纠正目标；Collective 只作用在整体，没有 seat",
-                    "in": {
-                      "anyOf": [
-                        {
-                          "$ref": "#/$defs/pause"
-                        },
-                        {
-                          "$ref": "#/$defs/resume"
-                        },
-                        {
-                          "$ref": "#/$defs/grant"
-                        },
-                        {
-                          "$ref": "#/$defs/withdraw"
-                        }
-                      ],
-                      "$defs": {
-                        "pause": {
-                          "type": "object",
-                          "properties": {
-                            "op": {
-                              "enum": [
-                                "pause"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "op"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "resume": {
-                          "type": "object",
-                          "properties": {
-                            "op": {
-                              "enum": [
-                                "resume"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "op"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "grant": {
-                          "type": "object",
-                          "properties": {
-                            "op": {
-                              "enum": [
-                                "grant"
-                              ]
-                            },
-                            "port": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "op",
-                            "port"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "withdraw": {
-                          "type": "object",
-                          "properties": {
-                            "op": {
-                              "enum": [
-                                "withdraw"
-                              ]
-                            },
-                            "port": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "op",
-                            "port"
-                          ],
-                          "additionalProperties": false
-                        }
-                      }
-                    },
-                    "attach": {
-                      "properties": {
-                        "ref": true
-                      },
-                      "additionalProperties": false
-                    },
-                    "out": {
-                      "value": {
-                        "type": "null"
-                      },
-                      "attach": {
-                        "additionalProperties": false
-                      }
-                    }
-                  }
-                }
+                "look": {"handle": "h-bindalook","spec": {"$block": "reference.kernel#/look"}},
+                "notify": {"handle": "h-bindanotify","spec": {"$block": "reference.kernel#/notify"}},
+                "correct": {"handle": "h-bindacorrect","spec": {"$block": "reference.kernel#/correct"}}
               },
               "derived": {},
               "accepted": true
             },
-            "delivery": {
-              "value": "sha256:bindingspawna",
-              "dependencies": [
-                "sha256:bindinga"
-              ]
-            }
+            "delivery": {"value": "sha256:bindingspawna","dependencies": ["sha256:bindinga"]}
           }
         },
         "event": "e-binda"
@@ -1739,84 +195,17 @@
         "what": {
           "send": {
             "key": "b",
-            "to": {
-              "port": "spawn"
-            },
+            "to": {"port": "spawn"},
             "ref": "h-bindchildspawn",
             "attach": {},
-            "result": {
-              "outcome": {
-                "ok": false,
-                "error": {
-                  "kind": "use",
-                  "message": "",
-                  "data": null
-                },
-                "dependencies": []
-              },
-              "attach": {},
-              "derived": {},
-              "accepted": true
-            },
-            "delivery": {
-              "value": "sha256:bindingspawnb",
-              "dependencies": [
-                "sha256:bindingb"
-              ]
-            }
+            "result": {"outcome": {"ok": false,"error": {"kind": "use","message": "","data": null},"dependencies": []},"attach": {},"derived": {},"accepted": true},
+            "delivery": {"value": "sha256:bindingspawnb","dependencies": ["sha256:bindingb"]}
           }
         }
       },
-      {
-        "by": "self",
-        "event": "e-bindend",
-        "what": {
-          "end": {
-            "ok": true,
-            "value": {
-              "a": true,
-              "b": "use"
-            },
-            "dependencies": []
-          }
-        }
-      }
+      {"by": "self","event": "e-bindend","what": {"end": {"$block": "scenario.binding#/values/sha256:bindingout"}}}
     ],
-    "i-bindinga": [
-      {
-        "by": "i-bindingchild",
-        "event": "e-binda",
-        "what": {
-          "birth": {
-            "definition": "sha256:bindinga",
-            "wire": {},
-            "input": {
-              "value": "sha256:null",
-              "dependencies": []
-            }
-          }
-        }
-      }
-    ]
+    "i-bindinga": [{"by": "i-bindingchild","event": "e-binda","what": {"birth": {"definition": "sha256:bindinga","wire": {},"input": {"value": "sha256:null","dependencies": []}}}}]
   },
-  "perturb": [
-    {
-      "crash": {
-        "instance": "i-root",
-        "after": 0
-      }
-    },
-    {
-      "crash": {
-        "instance": "i-bindingchild",
-        "after": 0
-      }
-    },
-    {
-      "crash": {
-        "instance": "i-bindingchild",
-        "after": 2
-      }
-    }
-  ]
+  "perturb": [{"crash": {"instance": "i-root","after": 0}},{"crash": {"instance": "i-bindingchild","after": 0}},{"crash": {"instance": "i-bindingchild","after": 2}}]
 }

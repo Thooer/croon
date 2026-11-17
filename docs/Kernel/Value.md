@@ -9,14 +9,7 @@ Value 有两种：
 - **JSON**：null、布尔、数、字符串、数组、对象。
 - **字节**：任意字节序列，如文件的内容。
 
-```json value.limits
-{
-  "number_max": 9007199254740991,
-  "depth": 128,
-  "json_bytes": 16777216,
-  "raw_bytes": 268435456
-}
-```
+形状是 `value.limits`。
 
 超出这些上限的不是 Value：
 
@@ -40,34 +33,7 @@ Value 有两种：
 
 JSON Value 的形状用 JSON Schema 的一个子集描述。同一份 Schema 既用来校验，也直接给 LLM 当工具参数的说明；LLM 的工具调用本来就用 JSON Schema，所以不另设类型系统。
 
-```json value.schema
-{
-  "description": "Schema 的 Schema：一份 Schema 是满足它的 JSON 对象。",
-  "$ref": "#/$defs/schema",
-  "$defs": {
-    "schema": {
-      "type": "object",
-      "properties": {
-        "type": { "$ref": "#/$defs/kind", "description": "值的种类" },
-        "description": { "type": "string", "description": "给人和 LLM 看的描述，不参与校验" },
-        "enum": { "type": "array", "description": "值必须等于其中之一" },
-        "items": { "$ref": "#/$defs/schema", "description": "数组每个元素的形状" },
-        "properties": { "type": "object", "additionalProperties": { "$ref": "#/$defs/schema" }, "description": "对象各字段的形状" },
-        "required": { "type": "array", "items": { "type": "string" }, "description": "对象必须有的字段" },
-        "additionalProperties": {
-          "anyOf": [{ "type": "boolean" }, { "$ref": "#/$defs/schema" }],
-          "description": "properties 之外的字段：false 不允许；给一份 Schema 则按它检查"
-        },
-        "anyOf": { "type": "array", "items": { "$ref": "#/$defs/schema" }, "description": "满足其中至少一个" },
-        "$defs": { "type": "object", "additionalProperties": { "$ref": "#/$defs/schema" }, "description": "可引用的命名形状，只写在顶层" },
-        "$ref": { "type": "string", "description": "引用顶层 $defs 里的形状，写作 #/$defs/名字" }
-      },
-      "additionalProperties": false
-    },
-    "kind": { "enum": ["null", "boolean", "number", "integer", "string", "array", "object"] }
-  }
-}
-```
+形状是 `value.schema`。
 
 形状之外的规则：
 
@@ -82,25 +48,7 @@ JSON Value 的形状用 JSON Schema 的一个子集描述。同一份 Schema 既
 
 Bundle 把一份内容及其显式依赖固定为不可变的整体，是 Value 的一种形状。Kernel 解释交付关系，内容的领域结构由使用方解释。
 
-```json value.bundle
-{
-  "type": "object",
-  "properties": {
-    "content": { "type": "string", "description": "JSON 或字节 Value 的 ID" },
-    "dependencies": { "$block": "value.dependencies" }
-  },
-  "required": ["content", "dependencies"],
-  "additionalProperties": false
-}
-```
-
-```json value.dependencies
-{
-  "type": "array",
-  "items": { "type": "string", "description": "Bundle ID" },
-  "description": "显式依赖根的集合；ID 排序、无重复"
-}
-```
+形状是 `value.bundle`，依赖集合是 `value.dependencies`。
 
 Bundle ID 是描述本身的内容 ID。内容相同、依赖不同，整体不同；原始内容的 ID 仍只指原始内容。依赖是已经成立的 Bundle，构建一批对象时按依赖在先的顺序建立，不能事后补边。因此闭包有限、无环，一份 Bundle ID 固定完整闭包。
 
@@ -114,17 +62,7 @@ Bundle ID 是描述本身的内容 ID。内容相同、依赖不同，整体不�
 
 信息边界共用数据与显式依赖。Signature、Port 的 Schema 校验 value，dependencies 由 Kernel 查建立者或交付者的资格，不由领域 Schema 推断。
 
-```json value.delivery
-{
-  "type": "object",
-  "properties": {
-    "value": {},
-    "dependencies": { "$block": "value.dependencies" }
-  },
-  "required": ["value", "dependencies"],
-  "additionalProperties": false
-}
-```
+形状是 `value.delivery`。
 
 记录把 value 存成内容 ID，依赖原样固定在记录中；会话传实际 JSON。空依赖表示只交出数据。Reference 附带是另一条轴，形状在 Definition。
 

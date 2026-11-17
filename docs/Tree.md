@@ -10,21 +10,6 @@ link 是目标字符串而不是一个 Bundle：它指的东西可能在 Tree �
 
 形状与磁盘分开：Tree 由内容与依赖决定，校验只看这两样。目录怎样遍历、符号链接跟不跟、可执行位怎么记、路径穿越怎么拒绝，取决于宿主与调用方，不改变 Tree 是什么。所以 `croon-tree` 不碰文件系统。
 
-```json directory.tree
-{
-  "type":"object",
-  "description":"名字非空，不含 / 或 NUL，不是 . 或 ..",
-  "additionalProperties":{"$ref":"#/$defs/entry"},
-  "$defs":{
-    "entry":{
-      "anyOf":[
-        {"type":"object","properties":{"file":{"type":"string","description":"字节 Bundle ID"},"x":{"type":"boolean"}},"required":["file","x"],"additionalProperties":false},
-        {"type":"object","properties":{"dir":{"type":"string","description":"目录 Bundle ID"}},"required":["dir"],"additionalProperties":false},
-        {"type":"object","properties":{"link":{"type":"string"}},"required":["link"],"additionalProperties":false}
-      ]
-    }
-  }
-}
-```
+形状是 `directory.tree`。
 
 参考：Kernel/README.md；Kernel/Value.md（Bundle）。

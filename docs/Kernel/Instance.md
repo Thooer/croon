@@ -28,19 +28,11 @@ Journal 本身——只追加的记录、记录的形状、四条不变量、恢
 
 Kernel 分配三种不透明的 ID：Instance 的身份、Handle、事件 ID。它们不是 Value，不按内容寻址。
 
-```json instance.id
-{
-  "prefix": { "instance": "i", "handle": "h", "event": "e" },
-  "separator": "-",
-  "alphabet": "0123456789abcdefghijklmnopqrstuvwxyz",
-  "max_length": 80
-}
-```
+形状是 `instance.id`。
 
 - 格式：`prefix` 里的种类前缀，接 `separator`，再接 `alphabet` 里的字符，总长不超过 `max_length`。
 - 前缀让三种 ID 互不相同，也不会与 Value 的 ID（`sha256:` 开头）、记录里 `by` 的保留值 `self` 与 `outside` 相同。
 - 由这个系统的密钥与造成它的位置确定地算出。密钥在系统第一次打开时随机生成，之后不变，是宿主一侧的状态，不进 Journal；此外不用随机数与时钟。所以同一个系统里，同样的输入得到同样的 Journal，重启、重放后 ID 不变。加密钥，是因为位置的熵低：只由位置算，知道算法的一方就能对猜测的位置算出 ID 来比对，事件 ID 就透露了造成它的一方的结构。算法写在代码里：ID 在 Journal 里只是不透明的字符串，以后换算法，已存的 ID 不受影响。
-
 
 ## 程序状态
 
@@ -67,7 +59,6 @@ Kernel 不提供默认工作区或当前产物。程序从 Signature 的输入�
 - Kernel 造成结束时，在任何物理动作之前持久化终止意图、原因事件、受影响的 Instance 与在途行动。恢复先续同次终止，禁止重开这些 body；全部收尾和结束在一个事务提交。嵌套 Collective 共享原原因事件，不能中途产生第二个行动者。
 - 进程内存里长驻的外部服务状态仍属于外部世界；不借本地快照冒充可以恢复其真实效果。
 
-
 ## 宿主故障与失败
 
 一次行动没有成功，要分清两种：body 看得到、能接住的失败，还是宿主一侧的故障。判据只有一条：能否在 Definition 不变、语义承诺不变的条件下修好原因。能，就是宿主故障；要 body 换个做法或换 Definition 才行，就是失败。
@@ -89,7 +80,6 @@ Kernel 不提供默认工作区或当前产物。程序从 Signature 的输入�
 由 Cognition 驱动的 Individual 在 body 求值结束时结束：结果按 Signature 的 out 检查，Kernel 写下结束，在同一个事务里按 Notify 上的登记交出结束状态。之后它的 Provided port 失效：持有指向它们的 Reference、自己还没结束的一方各记一条失效，再交给它的被拒；已结束的一方的 Journal 到结束为止，不再记。对它的 Look 与 Notify 仍然有效：查看、读取照常，向 Notify 登记当场交出结束状态；对它的 Correct 以 denied 失败，已经没有可纠正的。它的 Journal 保留，可以读取，可以追责。
 
 Collective 没有 body，也没有自己的一步。实例化一份 Charter，Collective 与它的全部成员的诞生是一次事件，在同一个事务里写下：Collective 的诞生写着人选，即每个 Seat 由哪份 Definition 来占；每个成员的诞生写着所属的 Collective、占的 Seat，以及按 Charter 接上的 Reference。名册不进记录：它由 Charter 的接线与成员的身份算出，见「成员的身份」。占着 Signature 所在 Seat 的成员结束，Collective 就结束：结果按 Collective 的 Signature 的 out 检查，结束状态按 Notify 上的登记交出；其余成员由 Kernel 当场结束，见「执行」，这也是同一次事件。别的成员先结束，只是它的 Provided port 失效。Collective 的 Journal 只记它自己发生的事：诞生、结束、施加在它身上的 Correct；成员的诞生与结束记在成员自己那里。一个 Collective 发生过什么，是它与它的成员的 Journal 的投影。
-
 
 ## 成员的身份
 
@@ -127,7 +117,6 @@ Control 是 Kernel 提供的、作用在一个 Instance 上的三个 Port：交�
 - 读自己的 Journal，要实例化的一方用 self 把自己的某个 Required port 接到自己的 Look 上，与指向自己的 Reference 一样，不天生就有。
 - 不开放结束，是价值判断：停手就够了，消失不必。暂停加收回已足以强制纠正，因为在途的 Atom 要么能随时丢弃，要么有上界。代价是不配合的前任只能一直停着，它的 Provided port 不失效，向它登记的一方等不到结束。这个判断不一定对。
 
-
 ## 委托
 
 - 要不要委托、委托给谁、Agent 是什么样，由主体自己选：从已有的 Definition 里选，自己构造一份，或请别人造。不满意就换。它能做到哪一步，看它接上了哪些 Port。别人通过对话要求它委托，只是提供信息。
@@ -135,7 +124,6 @@ Control 是 Kernel 提供的、作用在一个 Instance 上的三个 Port：交�
 - 结果以数据与显式依赖交回；文件快照也是 Bundle，由接收方决定采用或合并。Agent 的独立执行不修改 Principal 携带的状态。
 - "拥有一个主体"分三样：持有它的 Provided port（能把活交给它）、持有它的 Control（能纠正）、是它的来处（对它负责）。前两样是 Reference，可以交给不同的主体。要让使用者碰不到某个 Reference，Agent 的来处应是持有它的一方，再把 Provided port 转交给使用者。Charter 里的上级至多有前两样，而且是 Charter 写明、收窄过的；第三样归 Collective。上级扩大不了自己的权利，要改就换 Charter；下级听不听，是下级的 Definition 怎样对待交来的东西。
 - 成员没有自己的财产：它的权利全部来自 Collective，经 Charter 接给它，所以它用这些权利产生的 Instance，来处是 Collective，Principal 也是 Collective；Journal 里记着是哪个成员做的。就像员工盖公章签的合同属于公司。所属的 Collective 本身也是成员的，再往上，直到经委托产生的那一层。
-
 
 ## 同一性
 

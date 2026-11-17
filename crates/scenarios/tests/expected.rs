@@ -1,6 +1,6 @@
-//! 场景的预期自洽：读文档里全部场景的 block，Kernel 的与 Language 的，按文档里的规则查。
+//! 场景的预期自洽：读全部场景的 block，Kernel 的与 Language 的，按文档里的规则查。
 //! 参考：docs/Kernel/Scenarios/README.md（格式）；docs/Kernel/Journal.md（记录、四条不变量）。
-//! 规则只在文档里：形状取自 instance.record、definition.schema、definition.eval 与 reference.kernel。
+//! 规则的形状取自 instance.record、definition.schema、definition.eval 与 reference.kernel。
 
 use std::collections::{BTreeMap, BTreeSet};
 

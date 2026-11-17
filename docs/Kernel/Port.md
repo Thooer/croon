@@ -14,105 +14,9 @@ instantiate 的 Reference 附带恰好覆盖目标 Definition 的 Required port�
 
 notify 接下 to 时查它链上每一节能收 definition.outcome：in 是空 Schema、等于它，或 anyOf 有一支等于它；比较忽略各处 description。登记之后目标结束，或目标已结束，就把原结束内容和实际依赖交到 to。to 只用一次；撤销派生出的那份就是退订。
 
-```json reference.kernel
-{
-  "pack": {
-    "description": "把内容和本次交付的依赖建立为 Bundle，返回 ID 并交付该根",
-    "in": {
-      "type": "object",
-      "properties": {
-        "content": {
-          "anyOf": [
-            {"type":"object","properties":{"json":{}},"required":["json"],"additionalProperties":false},
-            {"type":"object","properties":{"base64":{"type":"string"}},"required":["base64"],"additionalProperties":false},
-            {"type":"object","properties":{"id":{"type":"string"}},"required":["id"],"additionalProperties":false},
-            {"type":"object","properties":{"parts":{"type":"array","items":{"type":"string"}}},"required":["parts"],"additionalProperties":false}
-          ]
-        },
-        "dependencies": {"$block":"value.dependencies"}
-      },
-      "required":["content","dependencies"],"additionalProperties":false
-    },
-    "attach":{"additionalProperties":false},
-    "out":{"value":{"type":"object","properties":{"id":{"type":"string"}},"required":["id"],"additionalProperties":false},"attach":{"additionalProperties":false}}
-  },
-  "construct": {
-    "description":"检查完整 Definition Bundle；成功事实属于该对象",
-    "in":{"type":"object","properties":{"definition":{"type":"string"}},"required":["definition"],"additionalProperties":false},
-    "attach":{"additionalProperties":false},
-    "out":{"value":{"type":"object","properties":{"id":{"type":"string"}},"required":["id"],"additionalProperties":false},"attach":{"additionalProperties":false}}
-  },
-  "instantiate": {
-    "description":"实例化已构造的 Definition，输入依赖来自本次交付；Required port 从附带或 self 接上",
-    "in": {
-      "type":"object",
-      "properties":{
-        "definition":{"type":"string"},
-        "input":{"$block":"value.delivery"},
-        "seats":{
-          "type":"object",
-          "additionalProperties":{
-            "type":"object",
-            "properties":{"definition":{"type":"string"},"input":{"$block":"value.delivery"}},
-            "required":["definition"],"additionalProperties":false
-          }
-        },
-        "self":{"type":"object","additionalProperties":{"type":"string"},"description":"Required port → port/<自己Provided port> 或 look"}
-      },
-      "required":["definition","input","seats","self"],"additionalProperties":false
-    },
-    "attach":{"additionalProperties":true},
-    "out":{"value":{"type":"null"},"attach":{"additionalProperties":true}}
-  },
-  "look": {
-    "description":"读取目标状态或 Journal；Handle 只是信息，依赖按被读位置实际取得的范围交付",
-    "in":{
-      "anyOf":[
-        {"type":"object","properties":{"op":{"enum":["inspect"]},"seat":{"type":"string"}},"required":["op"],"additionalProperties":false},
-        {"type":"object","properties":{"op":{"enum":["read"]},"seat":{"type":"string"},"from":{"type":"integer"},"limit":{"type":"integer"}},"required":["op"],"additionalProperties":false}
-      ]
-    },
-    "attach":{"additionalProperties":false},
-    "out":{"value":{},"attach":{"additionalProperties":false}}
-  },
-  "notify": {
-    "description":"沿附带的 to 交付一次结束结果；带 seat 时作用在对应成员",
-    "in":{"type":"object","properties":{"seat":{"type":"string"}},"additionalProperties":false},
-    "attach":{"properties":{"to":true},"required":["to"],"additionalProperties":false},
-    "out":{"value":{"type":"null"},"attach":{"additionalProperties":false}}
-  },
-  "correct": {
-    "description":"纠正目标；Collective 只作用在整体，没有 seat",
-    "in":{
-      "anyOf":[{"$ref":"#/$defs/pause"},{"$ref":"#/$defs/resume"},{"$ref":"#/$defs/grant"},{"$ref":"#/$defs/withdraw"}],
-      "$defs":{
-        "pause":{"type":"object","properties":{"op":{"enum":["pause"]}},"required":["op"],"additionalProperties":false},
-        "resume":{"type":"object","properties":{"op":{"enum":["resume"]}},"required":["op"],"additionalProperties":false},
-        "grant":{"type":"object","properties":{"op":{"enum":["grant"]},"port":{"type":"string"}},"required":["op","port"],"additionalProperties":false},
-        "withdraw":{"type":"object","properties":{"op":{"enum":["withdraw"]},"port":{"type":"string"}},"required":["op","port"],"additionalProperties":false}
-      }
-    },
-    "attach":{"properties":{"ref":true},"additionalProperties":false},
-    "out":{"value":{"type":"null"},"attach":{"additionalProperties":false}}
-  },
-  "revoke": {
-    "description":"沿派生链撤销这次给出的 Reference",
-    "in":{"type":"null"},"attach":{"additionalProperties":false},
-    "out":{"value":{"type":"null"},"attach":{"additionalProperties":false}}
-  }
-}
-```
+形状是 `reference.kernel`。
 
-Look 的结果使用以下形状；单列形状避免把读取的记录 Schema 嵌套回 Port spec、再经 Definition 回到记录而形成规格展开环。Look 的 out 接受 Value，Kernel 产生的结果另外按本 block 校验。
-
-```json reference.look.result
-{
-  "anyOf":[
-    {"type":"object","properties":{"status":{"enum":["running","paused","ended"]},"outcome":{"anyOf":[{"$block":"definition.outcome"},{"type":"null"}]}},"required":["status","outcome"],"additionalProperties":false},
-    {"type":"object","properties":{"records":{"type":"array","items":{"$block":"instance.record"}}},"required":["records"],"additionalProperties":false}
-  ]
-}
-```
+Look 的结果使用 `reference.look.result`；单列形状避免把读取的记录 Schema 嵌套回 Port spec、再经 Definition 回到记录而形成规格展开环。Look 的 out 接受 Value，Kernel 产生的结果另外按它校验。
 
 ## 根绑定
 
@@ -120,23 +24,7 @@ root entry 诞生必须明确给出 binding。sources 恰好覆盖 self 以外�
 
 来源规格与接收方声明按相同规则比较，description 可以不同，派生链分别保存各自准确的 ID 与位置。self Look 使用共同 Look，无需为根设另一份契约。缺项拒绝，来源不由名称或同形规格推断。
 
-```json reference.binding
-{
-  "type":"object",
-  "properties":{
-    "sources":{
-      "type":"object",
-      "additionalProperties":{
-        "anyOf":[
-          {"type":"object","properties":{"kernel":{"enum":["pack","construct","instantiate"]},"spec":{"type":"object"}},"required":["kernel","spec"],"additionalProperties":false},
-          {"type":"object","properties":{"host":{"type":"string","description":"宿主恢复身份"},"spec":{"type":"object"}},"required":["host","spec"],"additionalProperties":false}
-        ]
-      }
-    }
-  },
-  "required":["sources"],"additionalProperties":false
-}
-```
+形状是 `reference.binding`。
 
 案例：同形宿主检查服务和 Kernel construct 接到不同来源，前者可以交付内容，只有后者建立构造事实。pack 取得新根后才能交给别方；失败请求声明的根没有这种效果。难改的点是所指、规格和交付来源的区分，索引重建按记录保持它们。
 

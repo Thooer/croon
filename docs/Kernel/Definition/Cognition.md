@@ -54,18 +54,7 @@ body 所需代码在完整 Definition Bundle 的显式依赖中。Language 解�
 
 ## 失败
 
-```json definition.failure
-{
-  "type": "object",
-  "properties": {
-    "kind": { "type": "string", "description": "契约层的 use、denied、type、terminated，或 Language 定义的" },
-    "message": { "type": "string" },
-    "data": {}
-  },
-  "required": ["kind", "message", "data"],
-  "additionalProperties": false
-}
-```
+形状是 `definition.failure`。
 
 | kind | 何时 |
 |---|---|

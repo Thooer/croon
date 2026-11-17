@@ -1,4 +1,4 @@
-//! 读文档里的场景：每个场景一个 json block，名字是 `scenario.` 加文件名，Language 的场景前面再加
+//! 读场景的预期：每个场景一份 block，名字是 `scenario.` 加文档的文件名，Language 的场景前面再加
 //! Language 的名字，如 `lang0.scenario.delegate`。所有场景共用一个 Value 的名字空间。
 //! 参考：docs/Kernel/Scenarios/README.md（格式）。
 
@@ -30,7 +30,7 @@ pub fn is_scenario(name: &str) -> bool {
             .is_some_and(|(_, rest)| rest.starts_with("scenario."))
 }
 
-/// 文档里全部场景：名字与展开过 `$block` 的内容。
+/// 全部场景：名字与展开过 `$block` 的内容。
 pub fn all() -> Vec<(&'static str, Json)> {
     BLOCKS
         .iter()

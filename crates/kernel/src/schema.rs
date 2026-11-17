@@ -20,7 +20,7 @@ mod tests {
             .expect_err(&format!("应当违反：schema = {schema}, value = {value}"))
     }
 
-    // ---- 文档里的 Schema 都合法：文档与校验器互为证据 ----
+    // ---- block 里的 Schema 都合法：block 与校验器互为证据 ----
 
     fn registry_ports() -> Vec<(String, Json)> {
         match blocks::json("reference.kernel") {
@@ -30,7 +30,7 @@ mod tests {
     }
 
     #[test]
-    fn every_schema_block_in_the_docs_is_a_valid_schema() {
+    fn every_schema_block_is_a_valid_schema() {
         for name in [
             "value.bundle",
             "value.delivery",

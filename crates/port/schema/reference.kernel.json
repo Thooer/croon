@@ -6,416 +6,81 @@
       "properties": {
         "content": {
           "anyOf": [
-            {
-              "type": "object",
-              "properties": {
-                "json": {}
-              },
-              "required": [
-                "json"
-              ],
-              "additionalProperties": false
-            },
-            {
-              "type": "object",
-              "properties": {
-                "base64": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "base64"
-              ],
-              "additionalProperties": false
-            },
-            {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "id"
-              ],
-              "additionalProperties": false
-            },
-            {
-              "type": "object",
-              "properties": {
-                "parts": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              },
-              "required": [
-                "parts"
-              ],
-              "additionalProperties": false
-            }
+            {"type":"object","properties":{"json":{}},"required":["json"],"additionalProperties":false},
+            {"type":"object","properties":{"base64":{"type":"string"}},"required":["base64"],"additionalProperties":false},
+            {"type":"object","properties":{"id":{"type":"string"}},"required":["id"],"additionalProperties":false},
+            {"type":"object","properties":{"parts":{"type":"array","items":{"type":"string"}}},"required":["parts"],"additionalProperties":false}
           ]
         },
-        "dependencies": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "description": "Bundle ID"
-          },
-          "description": "显式依赖根的集合；ID 排序、无重复"
-        }
+        "dependencies": {"$block":"value.dependencies"}
       },
-      "required": [
-        "content",
-        "dependencies"
-      ],
-      "additionalProperties": false
+      "required":["content","dependencies"],"additionalProperties":false
     },
-    "attach": {
-      "additionalProperties": false
-    },
-    "out": {
-      "value": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id"
-        ],
-        "additionalProperties": false
-      },
-      "attach": {
-        "additionalProperties": false
-      }
-    }
+    "attach":{"additionalProperties":false},
+    "out":{"value":{"type":"object","properties":{"id":{"type":"string"}},"required":["id"],"additionalProperties":false},"attach":{"additionalProperties":false}}
   },
   "construct": {
-    "description": "检查完整 Definition Bundle；成功事实属于该对象",
-    "in": {
-      "type": "object",
-      "properties": {
-        "definition": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "definition"
-      ],
-      "additionalProperties": false
-    },
-    "attach": {
-      "additionalProperties": false
-    },
-    "out": {
-      "value": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id"
-        ],
-        "additionalProperties": false
-      },
-      "attach": {
-        "additionalProperties": false
-      }
-    }
+    "description":"检查完整 Definition Bundle；成功事实属于该对象",
+    "in":{"type":"object","properties":{"definition":{"type":"string"}},"required":["definition"],"additionalProperties":false},
+    "attach":{"additionalProperties":false},
+    "out":{"value":{"type":"object","properties":{"id":{"type":"string"}},"required":["id"],"additionalProperties":false},"attach":{"additionalProperties":false}}
   },
   "instantiate": {
-    "description": "实例化已构造的 Definition，输入依赖来自本次交付；Required port 从附带或 self 接上",
+    "description":"实例化已构造的 Definition，输入依赖来自本次交付；Required port 从附带或 self 接上",
     "in": {
-      "type": "object",
-      "properties": {
-        "definition": {
-          "type": "string"
-        },
-        "input": {
-          "type": "object",
-          "properties": {
-            "value": {},
-            "dependencies": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "description": "Bundle ID"
-              },
-              "description": "显式依赖根的集合；ID 排序、无重复"
-            }
-          },
-          "required": [
-            "value",
-            "dependencies"
-          ],
-          "additionalProperties": false
-        },
-        "seats": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "object",
-            "properties": {
-              "definition": {
-                "type": "string"
-              },
-              "input": {
-                "type": "object",
-                "properties": {
-                  "value": {},
-                  "dependencies": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "description": "Bundle ID"
-                    },
-                    "description": "显式依赖根的集合；ID 排序、无重复"
-                  }
-                },
-                "required": [
-                  "value",
-                  "dependencies"
-                ],
-                "additionalProperties": false
-              }
-            },
-            "required": [
-              "definition"
-            ],
-            "additionalProperties": false
+      "type":"object",
+      "properties":{
+        "definition":{"type":"string"},
+        "input":{"$block":"value.delivery"},
+        "seats":{
+          "type":"object",
+          "additionalProperties":{
+            "type":"object",
+            "properties":{"definition":{"type":"string"},"input":{"$block":"value.delivery"}},
+            "required":["definition"],"additionalProperties":false
           }
         },
-        "self": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          },
-          "description": "Required port → port/<自己Provided port> 或 look"
-        }
+        "self":{"type":"object","additionalProperties":{"type":"string"},"description":"Required port → port/<自己Provided port> 或 look"}
       },
-      "required": [
-        "definition",
-        "input",
-        "seats",
-        "self"
-      ],
-      "additionalProperties": false
+      "required":["definition","input","seats","self"],"additionalProperties":false
     },
-    "attach": {
-      "additionalProperties": true
-    },
-    "out": {
-      "value": {
-        "type": "null"
-      },
-      "attach": {
-        "additionalProperties": true
-      }
-    }
+    "attach":{"additionalProperties":true},
+    "out":{"value":{"type":"null"},"attach":{"additionalProperties":true}}
   },
   "look": {
-    "description": "读取目标状态或 Journal；Handle 只是信息，依赖按被读位置实际取得的范围交付",
-    "in": {
-      "anyOf": [
-        {
-          "type": "object",
-          "properties": {
-            "op": {
-              "enum": [
-                "inspect"
-              ]
-            },
-            "seat": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "op"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "properties": {
-            "op": {
-              "enum": [
-                "read"
-              ]
-            },
-            "seat": {
-              "type": "string"
-            },
-            "from": {
-              "type": "integer"
-            },
-            "limit": {
-              "type": "integer"
-            }
-          },
-          "required": [
-            "op"
-          ],
-          "additionalProperties": false
-        }
+    "description":"读取目标状态或 Journal；Handle 只是信息，依赖按被读位置实际取得的范围交付",
+    "in":{
+      "anyOf":[
+        {"type":"object","properties":{"op":{"enum":["inspect"]},"seat":{"type":"string"}},"required":["op"],"additionalProperties":false},
+        {"type":"object","properties":{"op":{"enum":["read"]},"seat":{"type":"string"},"from":{"type":"integer"},"limit":{"type":"integer"}},"required":["op"],"additionalProperties":false}
       ]
     },
-    "attach": {
-      "additionalProperties": false
-    },
-    "out": {
-      "value": {},
-      "attach": {
-        "additionalProperties": false
-      }
-    }
+    "attach":{"additionalProperties":false},
+    "out":{"value":{},"attach":{"additionalProperties":false}}
   },
   "notify": {
-    "description": "沿附带的 to 交付一次结束结果；带 seat 时作用在对应成员",
-    "in": {
-      "type": "object",
-      "properties": {
-        "seat": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
-    },
-    "attach": {
-      "properties": {
-        "to": true
-      },
-      "required": [
-        "to"
-      ],
-      "additionalProperties": false
-    },
-    "out": {
-      "value": {
-        "type": "null"
-      },
-      "attach": {
-        "additionalProperties": false
-      }
-    }
+    "description":"沿附带的 to 交付一次结束结果；带 seat 时作用在对应成员",
+    "in":{"type":"object","properties":{"seat":{"type":"string"}},"additionalProperties":false},
+    "attach":{"properties":{"to":true},"required":["to"],"additionalProperties":false},
+    "out":{"value":{"type":"null"},"attach":{"additionalProperties":false}}
   },
   "correct": {
-    "description": "纠正目标；Collective 只作用在整体，没有 seat",
-    "in": {
-      "anyOf": [
-        {
-          "$ref": "#/$defs/pause"
-        },
-        {
-          "$ref": "#/$defs/resume"
-        },
-        {
-          "$ref": "#/$defs/grant"
-        },
-        {
-          "$ref": "#/$defs/withdraw"
-        }
-      ],
-      "$defs": {
-        "pause": {
-          "type": "object",
-          "properties": {
-            "op": {
-              "enum": [
-                "pause"
-              ]
-            }
-          },
-          "required": [
-            "op"
-          ],
-          "additionalProperties": false
-        },
-        "resume": {
-          "type": "object",
-          "properties": {
-            "op": {
-              "enum": [
-                "resume"
-              ]
-            }
-          },
-          "required": [
-            "op"
-          ],
-          "additionalProperties": false
-        },
-        "grant": {
-          "type": "object",
-          "properties": {
-            "op": {
-              "enum": [
-                "grant"
-              ]
-            },
-            "port": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "op",
-            "port"
-          ],
-          "additionalProperties": false
-        },
-        "withdraw": {
-          "type": "object",
-          "properties": {
-            "op": {
-              "enum": [
-                "withdraw"
-              ]
-            },
-            "port": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "op",
-            "port"
-          ],
-          "additionalProperties": false
-        }
+    "description":"纠正目标；Collective 只作用在整体，没有 seat",
+    "in":{
+      "anyOf":[{"$ref":"#/$defs/pause"},{"$ref":"#/$defs/resume"},{"$ref":"#/$defs/grant"},{"$ref":"#/$defs/withdraw"}],
+      "$defs":{
+        "pause":{"type":"object","properties":{"op":{"enum":["pause"]}},"required":["op"],"additionalProperties":false},
+        "resume":{"type":"object","properties":{"op":{"enum":["resume"]}},"required":["op"],"additionalProperties":false},
+        "grant":{"type":"object","properties":{"op":{"enum":["grant"]},"port":{"type":"string"}},"required":["op","port"],"additionalProperties":false},
+        "withdraw":{"type":"object","properties":{"op":{"enum":["withdraw"]},"port":{"type":"string"}},"required":["op","port"],"additionalProperties":false}
       }
     },
-    "attach": {
-      "properties": {
-        "ref": true
-      },
-      "additionalProperties": false
-    },
-    "out": {
-      "value": {
-        "type": "null"
-      },
-      "attach": {
-        "additionalProperties": false
-      }
-    }
+    "attach":{"properties":{"ref":true},"additionalProperties":false},
+    "out":{"value":{"type":"null"},"attach":{"additionalProperties":false}}
   },
   "revoke": {
-    "description": "沿派生链撤销这次给出的 Reference",
-    "in": {
-      "type": "null"
-    },
-    "attach": {
-      "additionalProperties": false
-    },
-    "out": {
-      "value": {
-        "type": "null"
-      },
-      "attach": {
-        "additionalProperties": false
-      }
-    }
+    "description":"沿派生链撤销这次给出的 Reference",
+    "in":{"type":"null"},"attach":{"additionalProperties":false},
+    "out":{"value":{"type":"null"},"attach":{"additionalProperties":false}}
   }
 }

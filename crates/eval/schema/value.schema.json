@@ -5,78 +5,22 @@
     "schema": {
       "type": "object",
       "properties": {
-        "type": {
-          "$ref": "#/$defs/kind",
-          "description": "值的种类"
-        },
-        "description": {
-          "type": "string",
-          "description": "给人和 LLM 看的描述，不参与校验"
-        },
-        "enum": {
-          "type": "array",
-          "description": "值必须等于其中之一"
-        },
-        "items": {
-          "$ref": "#/$defs/schema",
-          "description": "数组每个元素的形状"
-        },
-        "properties": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/$defs/schema"
-          },
-          "description": "对象各字段的形状"
-        },
-        "required": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "对象必须有的字段"
-        },
+        "type": { "$ref": "#/$defs/kind", "description": "值的种类" },
+        "description": { "type": "string", "description": "给人和 LLM 看的描述，不参与校验" },
+        "enum": { "type": "array", "description": "值必须等于其中之一" },
+        "items": { "$ref": "#/$defs/schema", "description": "数组每个元素的形状" },
+        "properties": { "type": "object", "additionalProperties": { "$ref": "#/$defs/schema" }, "description": "对象各字段的形状" },
+        "required": { "type": "array", "items": { "type": "string" }, "description": "对象必须有的字段" },
         "additionalProperties": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/schema"
-            }
-          ],
+          "anyOf": [{ "type": "boolean" }, { "$ref": "#/$defs/schema" }],
           "description": "properties 之外的字段：false 不允许；给一份 Schema 则按它检查"
         },
-        "anyOf": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/schema"
-          },
-          "description": "满足其中至少一个"
-        },
-        "$defs": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/$defs/schema"
-          },
-          "description": "可引用的命名形状，只写在顶层"
-        },
-        "$ref": {
-          "type": "string",
-          "description": "引用顶层 $defs 里的形状，写作 #/$defs/名字"
-        }
+        "anyOf": { "type": "array", "items": { "$ref": "#/$defs/schema" }, "description": "满足其中至少一个" },
+        "$defs": { "type": "object", "additionalProperties": { "$ref": "#/$defs/schema" }, "description": "可引用的命名形状，只写在顶层" },
+        "$ref": { "type": "string", "description": "引用顶层 $defs 里的形状，写作 #/$defs/名字" }
       },
       "additionalProperties": false
     },
-    "kind": {
-      "enum": [
-        "null",
-        "boolean",
-        "number",
-        "integer",
-        "string",
-        "array",
-        "object"
-      ]
-    }
+    "kind": { "enum": ["null", "boolean", "number", "integer", "string", "array", "object"] }
   }
 }
