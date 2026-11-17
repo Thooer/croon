@@ -74,6 +74,7 @@ Bundle ID 是描述本身的内容 ID。内容相同、依赖不同，整体不�
 
 ## 待定
 
+- Schema 能不能标出「这个字段是 Bundle」：现在 Bundle ID 在 Value 里只是字符串，哪些字段指向交付的 Bundle，只能靠描述或字段名的约定。候选是 value.schema 给 string 加一个关键字，标出这个字段的值是一个 Bundle ID；Kernel 在交出与结束时检查它在本次交付的 dependencies 里，「字段中普通 ID 不自动展开」不变，见 Reference.md「能读的 ID」。用处：一个 Definition 收几份、交回几份目录，由它的 Signature 声明，调用方的适配层（工作区、命令行、外部协议）据此逐个映射，不靠约定，见 croon-app:docs/Library/Runtime.md 待定「目录字段的声明」。要定：关键字的名字，是否区分目录与别的 Bundle（Tree 的形状属于 croon-tree，Kernel 不解释目录），检查放在哪一步。场景：croon-app 作为工具，一个 Definition 收代码与参考资料两个目录。
 - Schema 没有 maxLength，单条消息的长度写不进 Schema；加是增量。长度只看形式就能判定，按刚性的分界该由通道强制。场景：群聊房间。
 - 内容库随对话增长：每轮 llm 的 messages 都是新 Value，按整份存，存储随轮数平方增长。分块去重可以只在存储层做，ID 仍按整份的规范文本算，不改 llm 的形状，所以能等实测再做（推断）。场景：W0 持续对话。
 
