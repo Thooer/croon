@@ -1,0 +1,14 @@
+{
+  "anyOf": [
+    {
+      "type": "object",
+      "properties": { "ok": { "enum": [true] }, "value": {}, "dependencies": { "$block": "value.dependencies" } },
+      "required": ["ok", "value", "dependencies"], "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": { "ok": { "enum": [false] }, "error": { "$block": "definition.failure" }, "dependencies": { "$block": "value.dependencies" } },
+      "required": ["ok", "error", "dependencies"], "additionalProperties": false
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "properties": {
+    "kind": { "type": "string", "description": "契约层的 use、denied、type、terminated，或 Language 定义的" },
+    "message": { "type": "string" },
+    "data": {}
+  },
+  "required": ["kind", "message", "data"],
+  "additionalProperties": false
+}

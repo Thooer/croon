@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "properties": {
+    "content": { "type": "string", "description": "JSON 或字节 Value 的 ID" },
+    "dependencies": { "$block": "value.dependencies" }
+  },
+  "required": ["content", "dependencies"],
+  "additionalProperties": false
+}

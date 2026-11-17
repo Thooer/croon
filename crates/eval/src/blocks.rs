@@ -1,137 +1,61 @@
 //! block：代码取用的 JSON 形状，各有一个名字，是那份形状的唯一出处；文档按名字引用。
-//! 大的在 schema/ 下各成一个文件，只有几行的直接写在表里。文件里留着 `$block`，取用时由
-//! [`expanded`] 展开；各 crate 的 `blocks::block` 先找自己的表，再找它依赖的 crate。
+//! 每份在用它的 crate 的 schema/ 下各成一个文件，文件名就是 block 名；文件里留着 `$block`，
+//! 取用时由 [`expanded`] 展开；各 crate 的 `blocks::block` 先找自己的表，再找它依赖的 crate。
 //! 本 crate 的表收 Value、Schema、Definition 与求值会话的形状。
 //! 参考：docs/Kernel/Engineering.md「选择」。
 
 use serde_json::Value as Json;
 
-/// 一个带名字的 block；`file` 与 `line` 报错时指回来源。
+/// 一个带名字的 block：`text` 是 `schema/<名字>.json` 的内容，`file` 在报错时指回它。
 #[derive(Debug)]
 pub struct Block {
     pub name: &'static str,
-    pub lang: &'static str,
     pub text: &'static str,
     pub file: &'static str,
-    pub line: usize,
 }
 
-pub static BLOCKS: &[Block] = &[
-    Block {
-        name: "definition.eval",
-        lang: "json",
-        text: include_str!("../schema/definition.eval.json"),
-        file: "crates/eval/schema/definition.eval.json",
-        line: 0,
-    },
-    Block {
-        name: "definition.failure",
-        lang: "json",
-        text: r#"{
-  "type": "object",
-  "properties": {
-    "kind": { "type": "string", "description": "契约层的 use、denied、type、terminated，或 Language 定义的" },
-    "message": { "type": "string" },
-    "data": {}
-  },
-  "required": ["kind", "message", "data"],
-  "additionalProperties": false
-}"#,
-        file: "crates/eval/src/blocks.rs",
-        line: 0,
-    },
-    Block {
-        name: "definition.outcome",
-        lang: "json",
-        text: r#"{
-  "anyOf": [
-    {
-      "type": "object",
-      "properties": { "ok": { "enum": [true] }, "value": {}, "dependencies": { "$block": "value.dependencies" } },
-      "required": ["ok", "value", "dependencies"], "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "properties": { "ok": { "enum": [false] }, "error": { "$block": "definition.failure" }, "dependencies": { "$block": "value.dependencies" } },
-      "required": ["ok", "error", "dependencies"], "additionalProperties": false
-    }
-  ]
-}"#,
-        file: "crates/eval/src/blocks.rs",
-        line: 0,
-    },
-    Block {
-        name: "definition.schema",
-        lang: "json",
-        text: include_str!("../schema/definition.schema.json"),
-        file: "crates/eval/schema/definition.schema.json",
-        line: 0,
-    },
-    Block {
-        name: "value.bundle",
-        lang: "json",
-        text: r#"{
-  "type": "object",
-  "properties": {
-    "content": { "type": "string", "description": "JSON 或字节 Value 的 ID" },
-    "dependencies": { "$block": "value.dependencies" }
-  },
-  "required": ["content", "dependencies"],
-  "additionalProperties": false
-}"#,
-        file: "crates/eval/src/blocks.rs",
-        line: 0,
-    },
-    Block {
-        name: "value.delivery",
-        lang: "json",
-        text: r#"{
-  "type": "object",
-  "properties": {
-    "value": {},
-    "dependencies": { "$block": "value.dependencies" }
-  },
-  "required": ["value", "dependencies"],
-  "additionalProperties": false
-}"#,
-        file: "crates/eval/src/blocks.rs",
-        line: 0,
-    },
-    Block {
-        name: "value.dependencies",
-        lang: "json",
-        text: r#"{
-  "type": "array",
-  "items": { "type": "string", "description": "Bundle ID" },
-  "description": "显式依赖根的集合；ID 排序、无重复"
-}"#,
-        file: "crates/eval/src/blocks.rs",
-        line: 0,
-    },
-    Block {
-        name: "value.limits",
-        lang: "json",
-        text: r#"{
-  "number_max": 9007199254740991,
-  "depth": 128,
-  "json_bytes": 16777216,
-  "raw_bytes": 268435456
-}"#,
-        file: "crates/eval/src/blocks.rs",
-        line: 0,
-    },
-    Block {
-        name: "value.schema",
-        lang: "json",
-        text: include_str!("../schema/value.schema.json"),
-        file: "crates/eval/schema/value.schema.json",
-        line: 0,
-    },
+/// 列出 block 的名字，每个名字对应调用它的 crate 里的 `schema/<名字>.json`，编进来成一张表。
+/// 名字就是去哪找它：先看用它的 crate 的 `schema/`，再沿依赖往下找。
+#[macro_export]
+macro_rules! block_files {
+    ($($name:literal),* $(,)?) => {
+        &[$($crate::blocks::Block {
+            name: $name,
+            text: include_str!(concat!("../schema/", $name, ".json")),
+            file: concat!("schema/", $name, ".json"),
+        }),*]
+    };
+}
+
+pub static BLOCKS: &[Block] = block_files![
+    "definition.eval",
+    "definition.failure",
+    "definition.outcome",
+    "definition.schema",
+    "value.bundle",
+    "value.delivery",
+    "value.dependencies",
+    "value.limits",
+    "value.schema",
 ];
 
 /// 在一张表里按名字找 block。
 pub fn find(table: &'static [Block], name: &str) -> Option<&'static Block> {
     table.iter().find(|block| block.name == name)
+}
+
+/// 自己的表与上游的结果合起来：两边是两份不同的 block 用了同一个名字是构建错误，不让下游悄悄盖掉上游。
+/// 同一份 block 经几条依赖路径各找到一次不算重名。
+pub fn chain(
+    own: Option<&'static Block>,
+    upstream: impl FnOnce() -> Option<&'static Block>,
+) -> Option<&'static Block> {
+    match (own, upstream()) {
+        (Some(a), Some(b)) if std::ptr::eq(a, b) => Some(a),
+        (Some(a), Some(_)) => panic!("block {} 与上游重名", a.name),
+        (Some(block), None) | (None, Some(block)) => Some(block),
+        (None, None) => None,
+    }
 }
 
 /// 本 crate 的 block。
@@ -165,8 +89,8 @@ fn get(lookup: &dyn Fn(&str) -> Option<&'static Block>, name: &str) -> &'static 
 fn parse(block: &Block) -> Json {
     serde_json::from_str(block.text).unwrap_or_else(|e| {
         panic!(
-            "{}:{}：block `{}` 不是合法的 JSON：{e}",
-            block.file, block.line, block.name
+            "{}：block `{}` 不是合法的 JSON：{e}",
+            block.file, block.name
         )
     })
 }
@@ -313,10 +237,8 @@ mod tests {
 
     static PORT: &[Block] = &[Block {
         name: "port",
-        lang: "json",
         text: r##"{"in":{"type":"object","properties":{"m":{"$ref":"#/$defs/m"}},"$defs":{"m":{"type":"string"}}}}"##,
         file: "test",
-        line: 0,
     }];
 
     #[test]
@@ -346,18 +268,14 @@ mod tests {
     fn a_block_may_point_into_itself_but_not_in_a_cycle() {
         static SELF: &[Block] = &[Block {
             name: "self",
-            lang: "json",
             text: r#"{"a":{"x":1},"b":{"$block":"self#/a"}}"#,
             file: "test",
-            line: 0,
         }];
         assert_eq!(expanded("self", &|n| find(SELF, n))["b"], json!({"x": 1}));
         static LOOP: &[Block] = &[Block {
             name: "loop",
-            lang: "json",
             text: r#"{"a":{"$block":"loop#/a"}}"#,
             file: "test",
-            line: 0,
         }];
         assert!(std::panic::catch_unwind(|| expanded("loop", &|n| find(LOOP, n))).is_err());
     }

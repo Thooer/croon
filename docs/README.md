@@ -78,7 +78,7 @@ P 委托 Individual A，A 使用两套上下文、两个模型，又委托 B。A
 
 回归集是 Kernel/README.md 的场景表：删改 Kernel 之后重新走一遍。子文件夹的 README.md 只写这一部分讲什么，不再列读法。
 
-跨目录的约定：代码使用的 JSON 形状只在 block 里定义（大的在 `crates/*/schema/`，几行的在 `src/blocks.rs`），概念的名字只在下面的名词表里。
+跨目录的约定：代码使用的 JSON 形状只在 block 里定义（在 `crates/*/schema/<名字>.json`），概念的名字只在下面的名词表里。
 
 ## 名词表
 

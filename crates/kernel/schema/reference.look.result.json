@@ -1,0 +1,6 @@
+{
+  "anyOf":[
+    {"type":"object","properties":{"status":{"enum":["running","paused","ended"]},"outcome":{"anyOf":[{"$block":"definition.outcome"},{"type":"null"}]}},"required":["status","outcome"],"additionalProperties":false},
+    {"type":"object","properties":{"records":{"type":"array","items":{"$block":"instance.record"}}},"required":["records"],"additionalProperties":false}
+  ]
+}

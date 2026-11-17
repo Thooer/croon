@@ -1,0 +1,5 @@
+{
+  "type": "array",
+  "items": { "type": "string", "description": "Bundle ID" },
+  "description": "显式依赖根的集合；ID 排序、无重复"
+}

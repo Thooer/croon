@@ -1,0 +1,5 @@
+{
+  "type":"object",
+  "properties":{"value":{"type":"string","description":"Value ID"},"dependencies":{"$block":"value.dependencies"}},
+  "required":["value","dependencies"],"additionalProperties":false
+}

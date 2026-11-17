@@ -34,7 +34,7 @@ pub fn is_scenario(name: &str) -> bool {
 pub fn all() -> Vec<(&'static str, Json)> {
     BLOCKS
         .iter()
-        .filter(|b| b.lang == "json" && is_scenario(b.name))
+        .filter(|b| is_scenario(b.name))
         .map(|b| (b.name, blocks::json(b.name)))
         .collect()
 }
