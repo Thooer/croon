@@ -1,5 +1,5 @@
-//! 读场景的预期：每个场景一份 block，名字是 `scenario.` 加文档的文件名，Language 的场景前面再加
-//! Language 的名字，如 `lang0.scenario.delegate`。所有场景共用一个 Value 的名字空间。
+//! 读场景的预期：每个场景一份 block，名字是 `scenario.` 加文档的文件名；用上层 Language 与 Library 写的场景，
+//! 预期在上层仓库，名字前面加那个仓库的前缀，如 croon-app 的 `library.scenario.delegate`。所有场景共用一个 Value 的名字空间。
 //! 参考：docs/Kernel/Scenarios/README.md（格式）。
 
 use std::collections::BTreeMap;
@@ -19,7 +19,7 @@ pub struct Scn {
     pub perturb: Vec<Json>,
 }
 
-/// 是不是一个场景的 block：Kernel 的写 `scenario.名字`，Language 的写 `语言.scenario.名字`。
+/// 是不是一个场景的 block：`scenario.名字`，上层的前面再加一段前缀。
 pub fn is_scenario(name: &str) -> bool {
     if matches!(name, "scenario.engine" | "scenario.exec") {
         return false;

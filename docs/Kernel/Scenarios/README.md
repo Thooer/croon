@@ -1,6 +1,6 @@
 # 场景
 
-这里是一组场景的预期，写成机器读得懂的规格：Kernel 跑完之后，每本 Journal 应当是什么样。场景本身（谁想做什么）在 ../README.md 的场景表，本目录只放预期，不放设计。每个场景一个文件，写它检验什么；预期本身是 block `scenario.` 加文件名的小写，在 crates/scenarios/schema/ 下。用真的 Language 写的场景，预期放在那种 Language 的仓库里，名字前面再加 Language 的名字，与这里的场景共用 Value 的名字空间，格式与脚手架相同。
+这里写一组场景检验什么：Kernel 跑完之后，每本 Journal 应当是什么样。场景本身（谁想做什么）在 ../README.md 的场景表，本目录不放设计。每个场景一个文件；预期是机器读得懂的 block，名字是 `scenario.` 加文件名的小写，在 crates/scenarios/schema/ 下。用真的 Language 写的场景，预期放在用它的上层仓库里，名字前面加那个仓库自己的前缀（croon-app 的是 `library.scenario.delegate`），与这里的场景共用 Value 的名字空间，格式与脚手架相同。
 
 ## 格式
 
@@ -37,9 +37,7 @@
   测试不可能枚举全序，所以只跑 seed 1 到 8，每场景各一次；名字里的「any」指每次得到的结果都得一样，不是指覆盖了全部。16 次 Index 重建同理，只随机交错不同 Journal 的记录，不重排一本 Journal 内部。这两处都靠上面的偏序证明覆盖，而不是靠枚举。
 - **预存**：需要排除「ID 不存在」干扰时，Setup.preload 在 root entry 创建前导入指定内容与 Bundle，只存内容，不授予 Instance 取得资格。
 
-形状是 `scenario.engine`。
-
-形状是 `scenario.exec`。
+测试用的假提供者 Port 的形状：模型是 `scenario.engine`，文件执行是 `scenario.exec`。
 
 - **比对**：每本 Journal 在占位名的绑定下与预期逐字段相等。
 

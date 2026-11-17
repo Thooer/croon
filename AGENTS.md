@@ -14,7 +14,7 @@ Kernel 是组合的基座，兼容是设计的一部分：别的 Agent 框架有
 | docs/Kernel/README.md | 系统：前提、保证、放置规则、运作方式、场景；系统级的待定 |
 | docs/Kernel/* | 已确认的设计；每部分末尾的「待定」一节列这部分未决的问题 |
 | docs/Kernel/Definition/ | Interface 与 Implementation、求值契约、Charter |
-| docs/Kernel/Scenarios/ | 首刀场景的预期：每个 Instance 的 Journal 与用到的内容，脚手架拿它驱动真的 Kernel；README.md 写格式与脚手架约定；每个场景一个文件写它检验什么，预期本身是 block `scenario.<名字>` |
+| docs/Kernel/Scenarios/ | 首刀场景检验什么：每个场景一个文件，预期本身是 block `scenario.<名字>`（每个 Instance 的 Journal 与用到的内容），脚手架拿它驱动真的 Kernel；README.md 写格式与脚手架约定 |
 | docs/Kernel/Engineering.md | 跨部分的实现选择与理由、为以后留的接口；绑某一部分的实现写在该部分的「实现」一节 |
 | docs/Tree.md | Tree：提供者一侧共用的目录内容格式，Kernel 不解释它 |
 | docs/Research/ | 前提的证据、研究发现、借鉴的判据、先例与出处 |
