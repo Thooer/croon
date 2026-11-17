@@ -3,6 +3,8 @@ name = "croon-port"
 description = "Croon 的 Port 与内容交付契约。"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
+repository.workspace = true
 rust-version.workspace = true
 publish.workspace = true
 

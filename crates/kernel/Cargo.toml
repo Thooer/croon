@@ -3,6 +3,8 @@ name = "kernel"
 description = "Croon 的 Kernel：守护进程，一个系统一台机器。"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
+repository.workspace = true
 rust-version.workspace = true
 publish.workspace = true
 

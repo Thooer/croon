@@ -3,6 +3,8 @@ name = "scenarios"
 description = "场景的脚手架：拿文档里写下的预期驱动真的 Kernel，跑完逐条比对。只供测试用。"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
+repository.workspace = true
 rust-version.workspace = true
 publish.workspace = true
 

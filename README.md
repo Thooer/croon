@@ -26,3 +26,7 @@ Kernel 不预设智能体、模型或工具。模型、文件执行、Language �
 在上层接入时按角色读，不必通读 docs：写宿主 Port（模型、文件执行等）读 `croon-port` 的头部，写 Language 读 `croon-eval` 的头部，写宿主（装起系统、驱动 root entry、处置宿主故障）读 `kernel` 的头部和它的最小宿主 `crates/kernel/tests/host.rs`。头部只写必须做什么，理由指回 docs 的具体小节；按角色的读法也列在 `docs/README.md` 的「地图」。读完这些还得去读实现才弄得清的行为，是文档的缺口，补进对应的头部或小节。
 
 文档入口是 `docs/README.md`。系统设计在 `docs/Kernel/README.md`，Value、Definition、Instance、Journal、Reference 与 Port 分别从对应文件进入。
+
+## 许可证
+
+Apache License 2.0，全文见 LICENSE。
